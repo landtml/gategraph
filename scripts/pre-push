@@ -1,0 +1,10 @@
+#!/bin/sh
+# pre-push, local mandatory-green: the fast lane (core suite ~15s + deterministic eval ~2s) must be
+# green before anything leaves this machine. The slow integration lane
+# stays a per-batch / CI concern (see .github/workflows/ci.yml).
+# Bypass (emergencies only): git push --no-verify
+# Install: make install-hooks
+set -e
+cd "$(git rev-parse --show-toplevel)"
+echo "pre-push: fast lane (make test-core eval), bypass with --no-verify" >&2
+make test-core eval

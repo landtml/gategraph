@@ -1,0 +1,67 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 harness/*)",
+      "Bash(bash harness/core/tests/run_checks.sh)",
+      "Bash(make check)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/harness/core/hooks/pretool_guard.py\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/harness/core/hooks/posttool_lint.py\"",
+            "timeout": 90
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/harness/core/hooks/posttool_lint.py\" --bash-relint",
+            "timeout": 90
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/harness/core/hooks/stop_gate.py\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/harness/core/hooks/session_start.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

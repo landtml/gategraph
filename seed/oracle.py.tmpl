@@ -1,0 +1,37 @@
+"""Oracle for the {{FH_PROJECT}} autonomous loop (Layer 2).
+
+Skeleton stamped by `gatebench init` because loop.enabled was set. `run_gates` is
+the ONLY method the loop requires (the Oracle ABC in harness/core/loop/
+defaults `incumbent()` to None and `proposal_space()` to [], override them
+only if your project uses them). The loop refuses to start until run_gates
+returns real metrics for the floors declared in adapter.yaml
+loop.gates.metric_floors.
+"""
+
+# THE CONTRACT (F3 pattern: keep enforced spec and narrated spec identical):
+# the domain and probes below are the REAL variant contract. run_gates MUST
+# sample from CONTRACT (including every boundary probe), and any variant
+# guide you write MUST print CONTRACT instead of restating it by hand. The
+# consumer-D consumer graduated a variant that violated its written contract
+# because the oracle grid never crossed a documented boundary. An explicit
+# CONTRACT block consumed by both sides makes that drift impossible.
+CONTRACT = {
+    # Evaluation domain: variants must behave on ALL of it, edges included.
+    "domain": (0.0, 1.0),
+    # Probes the grid must contain EXACTLY, put every documented boundary
+    # and known corner case here, not just interior samples.
+    "boundary_probes": [0.0, 1.0],
+}
+
+
+class Oracle:
+    """Project-specific evaluation authority for loop variants."""
+
+    def run_gates(self, variant, cfg):
+        """Evaluate one variant; return a GateResult
+        (passes, metrics, tripwires, notes).
+
+        Sample the evaluation grid from CONTRACT["domain"] and include every
+        CONTRACT["boundary_probes"] point explicitly.
+        """
+        raise NotImplementedError("implement harness/adapter/oracle.py: run_gates()")

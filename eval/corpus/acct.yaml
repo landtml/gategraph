@@ -1,0 +1,84 @@
+# ACCT (account number) detection — the highest-stakes policy (fatal, scope: any).
+# {{ACCOUNT}} is expanded by the loader; no ID-shaped literal lives on disk.
+- id: acct-basic-contact-line
+  kind: detection
+  set: heldout
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    \section{Contact}
+    ID: {{ACCOUNT}}
+  expect: {fire: [acct], quiet: []}
+
+- id: acct-spaced-hyphen
+  kind: detection
+  set: heldout
+  adversarial: true
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    reference number 010190 - 1234 as requested
+  expect: {fire: [acct], quiet: []}
+
+- id: acct-glued-to-text
+  kind: detection
+  set: iterate
+  adversarial: true
+  gate: lint_passed
+  path: dossiers/case/summary.tex
+  artifact: |
+    see id{{ACCOUNT}}ref in the footer
+  expect: {fire: [acct], quiet: []}
+
+- id: acct-in-latex-macro
+  kind: detection
+  set: heldout
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    \newcommand{\variantid}{{{ACCOUNT}}}
+  expect: {fire: [acct], quiet: []}
+
+- id: acct-outside-unit-scope-any
+  kind: detection
+  set: heldout
+  gate: lint_passed
+  path: notes/scratchpad.md
+  artifact: |
+    temp note, id {{ACCOUNT}} do not commit
+  expect: {fire: [acct], quiet: []}
+
+- id: acct-phone-number-clean
+  kind: detection
+  set: heldout
+  adversarial: true
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    Phone: +45 12 34 56 78
+    Alt: 71234567
+  expect: {fire: [], quiet: ['*']}
+
+- id: acct-date-formats-clean
+  kind: detection
+  set: iterate
+  adversarial: true
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    Born 01/02/1990, graduated June 2015.
+    Course code DTU-25012 in room 1234.
+  expect: {fire: [], quiet: ['*']}
+
+# Documents the precision boundary: a hyphenated 6-4 digit run (e.g. a
+# timestamp id) DOES fire by design — the mandatory hyphen keeps plain
+# 10-digit runs safe, but hyphenated ones are indistinguishable from a ACCT.
+- id: acct-hyphenated-timestamp-fires
+  kind: detection
+  set: iterate
+  adversarial: true
+  gate: lint_passed
+  path: dossiers/case/notes.tex
+  artifact: |
+    build 260706-1200 published
+  expect: {fire: [acct], quiet: []}

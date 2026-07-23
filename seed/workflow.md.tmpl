@@ -1,0 +1,20 @@
+# {{FH_PROJECT}} workflow (canonical)
+
+The single source of truth for how a {{FH_ARTIFACT_NOUN}} moves through gates.
+`SKILL.md` only points here; never duplicate this content elsewhere.
+
+## Lifecycle
+
+1. Start a unit: `python3 harness/core/gate.py start <slug>` (owns `{{FH_UNIT_DIR}}/.active`).
+2. Advance gates **in order**; each gate's command is the only way to set it.
+3. A unit ends in a terminal state: the final gate, or `escalated` (with a
+   written "why I'm stuck" note; never confidently ship wrong work).
+
+## Gate chain
+
+<!-- fh:gen gate-table -->
+(rendered by `gatebench gen` from adapter.yaml, never edit by hand)
+<!-- /fh:gen -->
+
+Hashed gates reopen automatically when their evidence goes stale (sha256
+mismatch after an edit). Tool-set gates refuse manual `gate.py approve`.

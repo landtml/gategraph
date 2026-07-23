@@ -1,0 +1,20 @@
+# T7/T9 nightly lane: the fault-injection detectors (chaos + fuzz) plus the
+# deterministic corpus, on a schedule so they cannot silently rot.
+name: nightly
+"on":
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  chaos-fuzz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install pyyaml
+      - run: make chaos
+      - run: make fuzz
+      - run: make eval

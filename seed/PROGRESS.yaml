@@ -1,0 +1,4 @@
+# Work-item ledger. An item flips `passes: true` ONLY on a green `make check`,
+# and must carry `evidence:` naming the command/file that proves it.
+# Item shape: {id, title, passes: false, evidence: null}
+items: []

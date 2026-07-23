@@ -1,0 +1,26 @@
+# {{FH_PROJECT}}
+
+One unit of work = one **{{FH_ARTIFACT_NOUN}}** (lives in `{{FH_UNIT_DIR}}/`).
+
+## Router, less but right (open 2-5 files, never "read everything")
+
+| Task | Read |
+|---|---|
+| Any session start | `MEMORY.md` (memory router), `HANDOFF.md` |
+| Working a unit | `.claude/skills/{{FH_PROJECT}}/workflow.md` (canonical workflow) |
+| Session discipline | `harness/core/PROTOCOL.md` |
+| Changing enforcement | `harness/adapter/adapter.yaml` (single source of truth) |
+
+## Harness contract (enforced, not advisory)
+
+- `make check` is the only definition of "done". `PROGRESS.yaml` items flip
+  `passes: true` only on a green `make check` and must name their `evidence:`.
+- Gates are managed by `harness/core/gate.py`; the next-step command for every
+  gate lives ONLY in `adapter.yaml` `workflow.gate_commands`.
+- Evidence over opinion: no gate advances without the artifact its check produces.
+- Do not edit files under `harness/core/`: they are template-owned
+  (`gatebench update` syncs them). Project enforcement grows in `harness/adapter/`.
+
+## Project rules
+
+{{FH_RULES_BLOCK}}

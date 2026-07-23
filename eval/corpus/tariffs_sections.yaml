@@ -1,0 +1,106 @@
+# Tariffs (internal-only) and forbidden dossier sections.
+- id: tariffs-list-price
+  kind: detection
+  set: heldout
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    \section{Costs}
+    list price 3.9 per unit
+  expect: {fire: [tariffs], quiet: []}
+
+- id: tariffs-net-margin
+  kind: detection
+  set: iterate
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    net margin per batch: 12
+  expect: {fire: [tariffs], quiet: []}
+
+- id: tariffs-discount-rate
+  kind: detection
+  set: heldout
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    discount rate: 4
+  expect: {fire: [tariffs], quiet: []}
+
+- id: tariffs-page-count-clean
+  kind: detection
+  set: heldout
+  adversarial: true
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    a 60-page appendix on numerical methods
+  expect: {fire: [], quiet: ['*']}
+
+- id: tariffs-out-of-scope-clean
+  kind: detection
+  set: iterate
+  adversarial: true
+  gate: lint_passed
+  path: dossiers/case/evaluation.md
+  artifact: |
+    internal note: list price 3.9, healthy margin
+  expect: {fire: [], quiet: ['*']}
+
+- id: notes-section-plain
+  kind: detection
+  set: heldout
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    \section{Internal Notes}
+    Open questions for the review.
+  expect: {fire: [notes-section], quiet: []}
+
+- id: notes-section-inner-spaces
+  kind: detection
+  set: iterate
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    \section{ Internal Notes }
+  expect: {fire: [notes-section], quiet: []}
+
+- id: notes-scope-summary-clean
+  kind: detection
+  set: heldout
+  adversarial: true
+  gate: lint_passed
+  path: dossiers/case/summary.tex
+  artifact: |
+    \section{Internal Notes}
+  expect: {fire: [], quiet: [notes-section]}
+
+- id: scratch-section-scratchpad
+  kind: detection
+  set: heldout
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    \section{Scratchpad}
+    loose ends to tidy
+  expect: {fire: [scratch-section], quiet: []}
+
+- id: scratch-section-todo
+  kind: detection
+  set: iterate
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    \section{TODO}
+  expect: {fire: [scratch-section], quiet: []}
+
+- id: scratch-subsection-clean
+  kind: detection
+  set: heldout
+  adversarial: true
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    \subsection{Scratch}
+  expect: {fire: [], quiet: [scratch-section]}

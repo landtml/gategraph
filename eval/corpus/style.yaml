@@ -1,0 +1,102 @@
+# Advisory style layer (warn severity — lint exit 1, never blocks a gate).
+- id: style-emdash-unicode
+  kind: detection
+  set: heldout
+  gate: lint_passed
+  path: dossiers/case/summary.tex
+  artifact: |
+    The results — frankly impressive — speak for themselves.
+  expect: {fire: [style-emdash], quiet: []}
+
+- id: style-emdash-tex-triple
+  kind: detection
+  set: iterate
+  gate: lint_passed
+  path: dossiers/case/summary.tex
+  artifact: |
+    The results---frankly impressive---speak for themselves.
+  expect: {fire: [style-emdash], quiet: []}
+
+- id: style-buzzword-leveraging
+  kind: detection
+  set: heldout
+  gate: lint_passed
+  path: dossiers/case/summary.tex
+  artifact: |
+    leveraging cross-functional synergies to deliver value
+  expect: {fire: [style-buzzwords], quiet: []}
+
+- id: style-buzzword-robust
+  kind: detection
+  set: iterate
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    designed a robust control architecture
+  expect: {fire: [style-buzzwords], quiet: []}
+
+- id: style-buzzword-boundary-clean
+  kind: detection
+  set: iterate
+  adversarial: true
+  gate: lint_passed
+  path: dossiers/case/summary.tex
+  artifact: |
+    we leveraged the existing rig for testing
+  expect: {fire: [], quiet: [style-buzzwords]}
+
+- id: style-cliche-in-conclusion
+  kind: detection
+  set: heldout
+  gate: lint_passed
+  path: dossiers/case/summary.tex
+  artifact: |
+    In conclusion, I thrive in a fast-paced environment.
+  expect: {fire: [style-cliche], quiet: []}
+
+- id: style-not-just-construction
+  kind: detection
+  set: heldout
+  gate: lint_passed
+  path: dossiers/case/summary.tex
+  artifact: |
+    I bring not just simulation experience but hands-on lab work.
+  expect: {fire: [style-not-just], quiet: []}
+
+- id: style-not-just-no-but-clean
+  kind: detection
+  set: iterate
+  adversarial: true
+  gate: lint_passed
+  path: dossiers/case/summary.tex
+  artifact: |
+    The rig is not just yet commissioned. We start in May.
+  expect: {fire: [], quiet: [style-not-just]}
+
+- id: style-shouting
+  kind: detection
+  set: heldout
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    Ship it now!!
+  expect: {fire: [shouting], quiet: []}
+
+- id: style-single-exclaim-clean
+  kind: detection
+  set: iterate
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    Ship it now!
+  expect: {fire: [], quiet: ['*']}
+
+- id: style-out-of-scope-clean
+  kind: detection
+  set: heldout
+  adversarial: true
+  gate: lint_passed
+  path: dossiers/case/notes.md
+  artifact: |
+    planning note — leveraging robust seamless tooling, fast-paced
+  expect: {fire: [], quiet: ['*']}

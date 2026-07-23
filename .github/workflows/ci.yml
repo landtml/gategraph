@@ -1,0 +1,36 @@
+# Mandatory CI. Committed ahead of the remote, inert
+# until the repo is pushed; branch protection is the USER's flip. Live-spend
+# paths (the env-gated smoke, the paired A/B) stay manual forever; CI must
+# never spend; tests/test_ci_workflows.py pins that.
+name: ci
+"on":
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  fast:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install pyyaml
+      - run: make test-core
+      - run: make eval
+  slow:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # test_upgrade_path stamps the previous git tag
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install pyyaml
+      - run: python3 -m unittest discover -s tests -v

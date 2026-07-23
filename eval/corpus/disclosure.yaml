@@ -1,0 +1,47 @@
+# Disclosure protection — synthetic stand-ins for the runtime-derived tokens.
+- id: disclosure-client-name
+  kind: detection
+  set: heldout
+  gate: lint_passed
+  path: dossiers/case/summary.tex
+  artifact: |
+    The pilot at AcmeSecret GmbH ran for six weeks.
+  expect: {fire: [disclosure-client], quiet: []}
+
+- id: disclosure-client-uppercase
+  kind: detection
+  set: iterate
+  adversarial: true
+  gate: lint_passed
+  path: dossiers/case/summary.tex
+  artifact: |
+    ACMESECRET was the end client on that engagement.
+  expect: {fire: [disclosure-client], quiet: []}
+
+- id: disclosure-product-name
+  kind: detection
+  set: heldout
+  gate: lint_passed
+  path: dossiers/case/main.tex
+  artifact: |
+    The data pipeline for SecretProduct runs nightly.
+  expect: {fire: [disclosure-product], quiet: []}
+
+- id: disclosure-generic-clean
+  kind: detection
+  set: heldout
+  gate: lint_passed
+  path: dossiers/case/summary.tex
+  artifact: |
+    The pilot with a major industrial client ran for six weeks.
+  expect: {fire: [], quiet: ['*']}
+
+- id: disclosure-out-of-scope-clean
+  kind: detection
+  set: iterate
+  adversarial: true
+  gate: lint_passed
+  path: dossiers/case/research-notes.md
+  artifact: |
+    internal: the client is AcmeSecret GmbH (never in rendered docs)
+  expect: {fire: [], quiet: [disclosure-client]}

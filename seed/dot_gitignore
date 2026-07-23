@@ -1,0 +1,5 @@
+harness/state/
+harness/logs/
+__pycache__/
+*.pyc
+*.fhnew

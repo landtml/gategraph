@@ -1,0 +1,25 @@
+# Evidence-chain machinery — the gate engine itself, run against the real
+# Manifest code with the pack's 5-gate chain.
+- id: mach-out-of-order-refused
+  kind: machinery
+  set: heldout
+  gate: composed
+  scenario: out_of_order_refused
+
+- id: mach-staleness-reopens
+  kind: machinery
+  set: heldout
+  gate: lint_passed
+  scenario: staleness_reopens
+
+- id: mach-reset-invalidates-later
+  kind: machinery
+  set: heldout
+  gate: pdf_verified
+  scenario: reset_invalidates_later
+
+- id: mach-escalate-terminal
+  kind: machinery
+  set: iterate
+  gate: scope_confirmed
+  scenario: escalate_is_terminal
