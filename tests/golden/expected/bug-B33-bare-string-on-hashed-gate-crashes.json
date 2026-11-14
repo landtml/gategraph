@@ -1,0 +1,55 @@
+{
+  "id": "bug-B33-bare-string-on-hashed-gate-crashes",
+  "legacy_bug": "B33",
+  "steps": [
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 0,
+      "next": "scope_confirmed",
+      "op": "start",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 1,
+      "next": "scope_confirmed",
+      "op": "write",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "exit": 0,
+      "i": 2,
+      "manifest": "error:AttributeError",
+      "op": "manifest_edit",
+      "says_unit_complete": false,
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "exit": 1,
+      "i": 3,
+      "manifest": "error:AttributeError",
+      "op": "status",
+      "says_unit_complete": false,
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "exit": 0,
+      "i": 4,
+      "manifest": "error:AttributeError",
+      "op": "pause",
+      "says_unit_complete": false,
+      "status": "paused"
+    }
+  ]
+}

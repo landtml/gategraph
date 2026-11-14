@@ -9,11 +9,13 @@ name: ci
   workflow_dispatch:
 
 jobs:
+  # Literal list; core/tests/test_brand.py asserts it equals brand.python_matrix()
+  # (MIN_PYTHON 3.11 up to CI_MAX_PYTHON 3.14), so the floor lives in one place (B51).
   fast:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ["3.10", "3.11", "3.12", "3.13"]
+        python: ["3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -21,6 +23,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: pip install pyyaml
       - run: make test-core
+      - run: make test-kernel
+      - run: make test-hosts
       - run: make eval
   slow:
     if: github.event_name != 'push'

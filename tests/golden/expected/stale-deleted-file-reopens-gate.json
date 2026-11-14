@@ -1,0 +1,99 @@
+{
+  "id": "stale-deleted-file-reopens-gate",
+  "steps": [
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 0,
+      "next": "scope_confirmed",
+      "op": "start",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 1,
+      "next": "scope_confirmed",
+      "op": "write",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 2,
+      "next": "scope_confirmed",
+      "op": "write",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [
+        "scope_confirmed"
+      ],
+      "exit": 0,
+      "gate": "scope_confirmed",
+      "i": 3,
+      "next": "composed",
+      "op": "approve",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [
+        "scope_confirmed",
+        "composed"
+      ],
+      "exit": 0,
+      "gate": "composed",
+      "i": 4,
+      "next": "lint_passed",
+      "op": "tool_set",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [
+        "scope_confirmed",
+        "composed",
+        "lint_passed"
+      ],
+      "exit": 0,
+      "gate": "lint_passed",
+      "i": 5,
+      "next": "pdf_verified",
+      "op": "lint",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [
+        "scope_confirmed",
+        "composed"
+      ],
+      "exit": 0,
+      "i": 6,
+      "next": "lint_passed",
+      "op": "delete",
+      "says_unit_complete": false,
+      "stale": [
+        "lint_passed"
+      ],
+      "status": "in_progress"
+    }
+  ]
+}

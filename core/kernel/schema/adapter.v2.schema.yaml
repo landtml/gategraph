@@ -1,0 +1,129 @@
+# Adapter schema 2 (plan section 1.7). Interpreted by the standard-library
+# validator in kernel/config.py (task K2). The reference interpreter is in
+# core/tests/contracts/test_schemas.py.
+#
+# Language: type (object, array, string, integer, number, boolean), required,
+# properties, items, enum, pattern (a full match), additional: false (no keys
+# beyond properties). YAML anchors resolve on load.
+#
+# rules: cross-field checks, each by name, with the message it must produce.
+# Placeholders in braces are filled by the validator. A rule message always
+# starts with the path of the offending key, so the key is named.
+
+id: adapter.v2
+
+definitions:
+  name: &name '[a-z][a-z0-9_-]*'
+  check: &check
+    type: object
+    required: [id, command, severity]
+    additional: false
+    properties:
+      id: {type: string, pattern: *name}
+      command: {type: string}
+      severity: {type: string, enum: [fatal, warn]}
+      timeout_s: {type: number}
+      on: {type: array, items: {type: string}}
+  verifier: &verifier
+    type: object
+    required: [rubric, n, model]
+    additional: false
+    properties:
+      id: {type: string, pattern: *name}
+      rubric: {type: string}
+      n: {type: integer}
+      model: {type: string}
+  approval: &approval
+    type: object
+    required: [required, channel]
+    additional: false
+    properties:
+      required: {type: boolean}
+      channel: {type: string, enum: [tty, token]}
+  surface: &surface
+    type: object
+    required: [include]
+    additional: false
+    properties:
+      include: {type: array, items: {type: string}}
+      exclude: {type: array, items: {type: string}}
+  repair: &repair
+    type: object
+    required: [max_attempts]
+    additional: false
+    properties:
+      max_attempts: {type: integer}
+  gate: &gate
+    type: object
+    required: [id]
+    additional: false
+    properties:
+      id: {type: string, pattern: *name}
+      needs: {type: array, items: {type: string, pattern: *name}}
+      checks: {type: array, items: {type: string, pattern: *name}}
+      verifiers: {type: array, items: *verifier}
+      approval: *approval
+      surface: *surface
+      produces: {type: array, items: {type: string}}
+      repair: *repair
+      seals_unit: {type: boolean}
+  # Policy (plan 1.9): the inputs of guard.decide. Optional as a whole. The shapes
+  # are those of the legacy adapter's policies.deny and policies.ask, and of its
+  # top-level protected_paths. A deny policy's regex must compile; the loader checks
+  # that, since this language cannot. ``blind`` has no legacy key (empty by default).
+  deny_policy: &deny_policy
+    type: object
+    required: [id, regex]
+    additional: false
+    properties:
+      id: {type: string}
+      regex: {type: string}
+      scope: {type: array, items: {type: string}}
+      severity: {type: string, enum: [fatal, warn]}
+      summary: {type: string}
+      enforces: {type: string}
+      pretool: {type: boolean}
+  ask_entry: &ask_entry
+    type: object
+    required: [paths]
+    additional: false
+    properties:
+      paths: {type: array, items: {type: string}}
+      reason: {type: string}
+  policy: &policy
+    type: object
+    additional: false
+    properties:
+      deny: {type: array, items: *deny_policy}
+      ask: {type: array, items: *ask_entry}
+      protected_paths: {type: array, items: {type: string}}
+      blind: {type: array, items: {type: string}}
+
+type: object
+required: [schema, project, unit_noun, unit_dir, gates]
+additional: false
+properties:
+  schema: {type: integer, enum: [2]}
+  project: {type: string, pattern: *name}
+  unit_noun: {type: string, pattern: *name}
+  unit_dir: {type: string, pattern: '[a-z][a-z0-9_./-]*'}
+  packs: {type: array, items: {type: string, pattern: *name}}
+  checks: {type: array, items: *check}
+  gates: {type: array, items: *gate}
+  policy: *policy
+
+rules:
+  - name: gates-required
+    message: "gates: at least one gate is required"
+  - name: duplicate-check-id
+    message: "checks[{index}].id: duplicate check id '{id}'"
+  - name: duplicate-gate-id
+    message: "gates[{index}].id: duplicate gate id '{id}'"
+  - name: needs-unknown-gate
+    message: "gates[{index}].needs: unknown gate '{need}'"
+  - name: needs-cycle
+    message: "gates[{index}].needs: cycle through gate '{id}'"
+  - name: gate-without-work
+    message: "gates[{index}].checks: gate '{id}' has neither checks, verifiers nor approval"
+  - name: surface-escapes-unit
+    message: "gates[{index}].{key}: glob '{glob}' escapes the unit"

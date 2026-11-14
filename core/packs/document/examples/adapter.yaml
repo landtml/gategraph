@@ -1,0 +1,19 @@
+# The adapter the document examples run under. It names the document pack and
+# three gates: the default preset of packs/document/pack.yaml. All content is
+# synthetic.
+schema: 2
+project: document-example
+unit_noun: document
+unit_dir: documents
+packs: [document]
+gates:
+  - id: scoped
+    checks: [required-sections]
+  - id: composed
+    needs: [scoped]
+    checks: [no-placeholders, page-count]
+  - id: packaged
+    needs: [composed]
+    checks: [render]
+    produces: ["build/**"]
+    seals_unit: true

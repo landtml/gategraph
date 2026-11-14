@@ -1,68 +1,81 @@
-# EVAL, the measurement subsystem (§13)
+# EVAL, the measurement subsystem
 
-A single agent run varies 2.2–6 percentage points even at temperature 0, so
+A single agent run varies a few percentage points even at temperature 0, so
 nothing here reports a bare percentage: pass-rates carry a 95% Wilson CI,
-seed-to-seed reliability is an ICC(1), and the A/B is a paired McNemar exact
-test. The machinery lives in `core/eval/` (stamped with core); the template's
-reference corpus lives in `eval/`.
+and seed-to-seed reliability is an ICC(1). The machinery lives in `core/eval/`; the reference corpus
+and the pack it runs against live in `eval/`.
+
+The measurement code runs on the LangGraph engine.
 
 ## Entry points
 
-- `make eval`, deterministic corpus × 5 seeds against the policy pack.
-  Prints pass-rate+CI (overall / iterate / heldout / adversarial), ICC(1),
-  and the per-gate failure histogram, the number that reveals which gates
-  are theater and should be cut. Exit 1 on any case regression; failures
-  are appended to `harness/state/failures.jsonl`.
-- `make eval-ab`, the paired A/B on the corpus's `kind: live` cases with
-  real `claude -p` workers (spends quota; never run implicitly). Arms:
-  OFF = the first sketch ships; ON = fatal-policy findings are fed back for a
-  bounded repair loop. Same cases × same trial indices, McNemar exact test.
-  Pre-register the success criterion in `docs/DESIGN.md` BEFORE running.
-- Stamped projects get `make eval` (seed Makefile); their cases live under
-  `harness/eval/corpus/*.yaml` and the pack defaults to the project's own
-  `adapter.yaml`.
+- `make eval` (also `make eval-new`): the deterministic corpus, run on the new engine
+  against `eval/pack_v2` and `eval/corpus`, five seeds per case. It prints pass-rate and
+  CI for overall, iterate, heldout and adversarial, the ICC(1), and the gate-failure
+  histogram. Detection cases run through the kernel policy; machinery cases run through
+  the unit graph with stub checks. Failed trials are appended to
+  the failure ledger at `harness/state/failures.jsonl` (`--root` chooses the project).
+  No network, no model. The measured result on this tree: 220 of 220 passed, 44 cases
+  (40 detection, 4 machinery) times 5 seeds, ICC(1) 1.000.
+- `make test-eval`: the unit tests of `core/eval/`.
+
+
+## Stamped projects
+
+A stamped project has no `eval` target of its own (its Makefile has `venv`,
+`check` and `maintenance`). The measurement code is shipped in `harness/core/eval/`,
+and its runner takes `--root`, `--pack` and `--corpus`, so a project that wants
+its own regression corpus runs `runner_v2.py` against its own pack and corpus.
+That is not wired into `make check` in this build.
 
 ## Case anatomy (`eval/corpus/*.yaml`, one YAML list per file)
 
-Three kinds, see `core/eval/corpus.py` for the authoritative schema:
+The corpus has 54 cases in seven files: 40 `detection`, 4 `machinery` and 10 `live`.
+`core/eval/corpus.py` is the authoritative schema. Three kinds:
 
-- `detection`, an artifact text + `expect: {fire: [...], quiet: [...]}`
-  (`quiet: ['*']` = nothing may fire). Runs the real policy engine with the
-  case's repo-relative `path` for scope matching. Clean cases are the
-  false-positive net and are as important as the catches.
-- `machinery`, a named evidence-chain scenario (`out_of_order_refused`,
-  `staleness_reopens`, `reset_invalidates_later`, `escalate_is_terminal`)
-  run against the real Manifest code with the pack's gate chain.
-- `live`, a sketching prompt + `gold` checks, consumed only by the A/B.
-  `gold.quiet` lists the fatal policy classes (what the harness can repair);
-  `gold.require` regexes and `max_words` are requirements the harness does
-  NOT enforce, so the A/B measures net effect, not a tautology.
+- `detection`: an artifact text plus `expect: {fire: [...], quiet: [...]}`
+  (`quiet: ['*']` means nothing may fire). It runs the real policy engine with the
+  case's repo-relative `path` for scope matching. Clean cases are the false-positive net
+  and are as important as the catches.
+- `machinery`: a named evidence-chain scenario (`out_of_order_refused`,
+  `staleness_reopens`, `reset_invalidates_later`, `escalate_is_terminal`) run through the
+  unit graph with the pack's gate chain. The scenarios test the evidence chain; the
+  check commands are stubs.
+- `live`: a model prompt plus `gold` checks, for a live run; `make eval` skips it.
+  `gold.quiet` lists the fatal policy classes (what the harness can repair).
+  `gold.require` regexes and `max_words` are requirements the harness does not enforce,
+  so the A/B measures net effect, not a tautology.
 
-Every case carries `set: iterate|heldout` and `adversarial: true|false`.
-Seeds perturb detection artifacts with verdict-preserving line insertions
-(seed 0 is the identity), so ICC(1) doubles as a determinism check.
+Every case carries `set: iterate|heldout` and `adversarial: true|false`. Seeds
+perturb detection artifacts with verdict-preserving line insertions (seed 0 is the
+identity), so ICC(1) doubles as a determinism check.
 
-**No deny-shaped literals on disk**: use the `{{ACCOUNT}}` placeholder, the
-loader expands it from a runtime-assembled synthetic token.
+**No deny-shaped literals on disk.** Write `{{ACCOUNT}}` where a case needs an
+identifier-shaped value. The loader expands it at run time from a token assembled in
+code, so the corpus files never contain one.
 
-## Corpus policy (anti-Goodhart, from §13)
+## Corpus policy (anti-Goodhart)
 
-- **Split.** `iterate` cases are for daily tuning; `heldout` cases are NEVER
-  tuned against. If a heldout case fails, fix the harness, not the case,
-  and only reclassify a case with a written rationale in the case file.
-- **Rotation.** ~10% of cases per month: retire the stalest passing cases
-  and seed replacements from real ledger rows (`harness/state/failures.jsonl`)
- , production failures are the best case generators. Rotation is a normal
-  commit; the corpus is versioned with the repo.
-- **Stratification.** Keep ~20% of cases adversarial/edge (`adversarial:
-  true`); the printed adversarial bucket tracks this slice separately.
-- **Growth loop.** Every recurring ledger failure becomes a new case AND
-  (if enforceable) a new adapter check; generic ones get `gatebench upstream`'d.
+- **Split.** `iterate` cases are for daily tuning; `heldout` cases are never tuned
+  against. If a heldout case fails, fix the harness, not the case, and reclassify a
+  case only with a written rationale in the case file.
+- **Rotation.** About 10% of cases per month: retire the stalest passing cases and
+  seed replacements from real failures in the ledger (`harness/state/failures.jsonl`).
+  Rotation is a normal commit; the corpus is versioned with the repo. The rotation
+  ritual is listed by `make maintenance`, which informs and never gates.
+- **Stratification.** Keep about 20% of cases adversarial or edge (`adversarial:
+  true`). The printed adversarial bucket tracks that slice separately.
+- **Growth loop.** Every recurring ledger failure becomes a new case and, if it is
+  enforceable, a new check or deny policy in the adapter.
 
-## The template's reference corpus (`eval/`)
+## The reference corpus (`eval/`)
 
-The corpus is synthetic. The pack (`eval/pack/harness/adapter/adapter.yaml`)
-is a five-gate adapter whose every token is invented. 44 cases: 40 detection,
-4 machinery; about a third adversarial. It is both the template's own regression net (a
-mutation-tested one: crippling a pack regex fails exactly its cases) and the
-worked example for project corpora.
+The corpus is synthetic. The pack (`eval/pack_v2`) is a schema-2 adapter with a
+five-gate chain and a set of deny and style policies, and every token in it is
+invented. The corpus is both the template's own regression net (a
+mutation-tested one: crippling a pack regex fails exactly its cases) and the worked
+example for project corpora.
+
+The machinery cases replace every check command with a passing stub (`true`), except
+the escalation scenario, which uses a failing one (`false`) with `max_attempts: 1`.
+They test the evidence chain, not the commands.

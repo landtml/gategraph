@@ -1,0 +1,4 @@
+description: the report cites a source, but the unit has no sources/ directory
+fails_at: sourced
+check: sources-resolve
+rule: sources.none

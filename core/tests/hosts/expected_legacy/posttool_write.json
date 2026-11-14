@@ -1,0 +1,8 @@
+{
+  "event": "posttool_write.json",
+  "hook": "posttool_lint.py",
+  "args": [],
+  "stdout": "",
+  "stderr": "",
+  "exit": 0
+}

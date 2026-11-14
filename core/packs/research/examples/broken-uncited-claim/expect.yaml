@@ -1,0 +1,4 @@
+description: one claim line names no source
+fails_at: composed
+check: claims-have-sources
+rule: claims.no_source

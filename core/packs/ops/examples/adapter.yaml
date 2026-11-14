@@ -1,0 +1,17 @@
+# The adapter every ops example uses. Gate ids match the pack's default preset.
+# The final gate is a human approval, and it seals the unit.
+schema: 2
+project: ops-example
+unit_noun: change
+unit_dir: changes
+packs: [ops]
+gates:
+  - id: planned
+    checks: [plan-parses, plan-targets]
+    surface: {include: ["plan.yaml"]}
+  - id: dry_run
+    checks: [dry-run-clean]
+    surface: {include: ["plan.yaml", "dry_run.log"]}
+  - id: approved
+    approval: {required: true, channel: tty}
+    seals_unit: true

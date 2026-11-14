@@ -1,20 +1,20 @@
-"""P0 tests: `gatebench.py init` stamps a correct, verifiable, git-committed project.
+"""P0 tests: `gategraph.py init` stamps a correct, verifiable, git-committed project.
 
-Contract under test (plan.md §4, §6, §17 P0):
-- stamped tree matches the project layout in §4
-- harness/.fh/MANIFEST.json records {version, files:{path: sha256}} covering
-  every file under harness/core/, and every hash verifies
-- name substitution applied to seed files; no leftover {{FH_*}} tokens
-- harness/adapter/adapter.yaml is valid: fh_schema, project, gates,
-  a gate_commands entry per gate, loop.enabled false by default
-- target is a git repo with an initial commit
-- the stamp proves itself alive: harness/core/tests/run_checks.sh exits 0
-- init refuses to stamp a dir that already has harness/.fh/MANIFEST.json
-- questionnaire works over stdin; --answers works non-interactively
-- loop=yes stamps harness/adapter/oracle.py skeleton and flips loop.enabled
+Contract under test:
+- the stamped tree matches the schema-2 layout: harness/adapter/adapter.yaml, harness/core
+  (without the full core suite: only tests/selftest.py), harness/.fh/MANIFEST.json;
+- the hash manifest covers exactly the stamped core files, and every hash verifies;
+- the stamped adapter loads with core.kernel.config.load (the schema-2 loader);
+- name substitution is applied to seed files; no leftover {{FH_*}} tokens;
+- target is a git repo with an initial commit;
+- the stamp proves itself alive: its selftest exits 0, and `make check` exits 0 (B35);
+- init refuses to stamp a dir that already has harness/.fh/MANIFEST.json;
+- the questionnaire works over stdin (eight prompts); --answers works non-interactively;
+- the legacy loop is not stamped (plan X1 deletes core/loop/).
 """
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -24,7 +24,10 @@ from pathlib import Path
 import yaml
 
 TEMPLATE = Path(__file__).resolve().parent.parent
-FH = TEMPLATE / "gatebench.py"
+FH = TEMPLATE / "gategraph.py"
+# test_stamp_v2 owns the venv and `make check` helpers; reuse them (see its docstring).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from test_stamp_v2 import make_check, require_template_venv, seed_venv  # noqa: E402
 
 ANSWERS = {
     "project": "scratchproj",
@@ -33,8 +36,26 @@ ANSWERS = {
     "gates": ["composed", "checked", "verified"],
     "hashed_gates": [],
     "seed_deny": True,
-    "loop_enabled": False,
 }
+
+# The questionnaire, in order: project, artifact noun, unit dir, gate chain, approval gates,
+# approval channel, packs, seed deny. Empty lines take the default.
+QUESTIONNAIRE_STDIN = "iview\nreport\nreports\ncomposed,reviewed\n\n\n\nn\n"
+
+# Reads a stamped adapter with the stamp's own schema-2 loader, in a child interpreter whose
+# core is the stamped harness/core (the same check init runs before it moves a stamp into place).
+CONFIG_CODE = """
+import json, sys
+sys.path.insert(0, "harness")
+from core.kernel import config
+cfg = config.load(".")
+print(json.dumps({
+    "schema": cfg.schema, "project": cfg.project, "unit_noun": cfg.unit_noun,
+    "unit_dir": cfg.unit_dir, "packs": list(cfg.packs),
+    "gates": [g.id for g in cfg.gates], "deny": [dict(d) for d in cfg.deny],
+    "checks": [c.id for c in cfg.checks],
+}))
+"""
 
 
 def run_init(target: Path, answers: dict | None = None, stdin: str | None = None,
@@ -47,6 +68,36 @@ def run_init(target: Path, answers: dict | None = None, stdin: str | None = None
     if extra:
         cmd += extra
     return subprocess.run(cmd, input=stdin, capture_output=True, text=True)
+
+
+def load_config(root: Path) -> dict:
+    """The stamped adapter, as core.kernel.config.load reads it (raises on an invalid one)."""
+    proc = subprocess.run([sys.executable, "-c", CONFIG_CODE], cwd=root,
+                          capture_output=True, text=True)
+    if proc.returncode != 0:
+        raise AssertionError("core.kernel.config.load refused the stamped adapter:\n"
+                             + proc.stdout + proc.stderr)
+    return json.loads(proc.stdout)
+
+
+STAMPED_TESTS = ("tests/selftest.py", "tests/run_checks.sh")
+
+
+def expected_stamped_core() -> dict:
+    """{core-relative path: template source} for the files a stamp carries: every file under
+    core/ except __pycache__, the packs (stamped per selection), and the test suite, whose only
+    stamped members are tests/selftest.py and the shim tests/run_checks.sh."""
+    keep = {}
+    for src in (TEMPLATE / "core").rglob("*"):
+        if not src.is_file() or "__pycache__" in src.parts or src.suffix == ".pyc":
+            continue
+        rel = src.relative_to(TEMPLATE / "core").as_posix()
+        if rel.startswith("packs/"):
+            continue
+        if rel.startswith("tests/") and rel not in STAMPED_TESTS:
+            continue
+        keep[rel] = src
+    return keep
 
 
 class TestInitStamp(unittest.TestCase):
@@ -74,15 +125,31 @@ class TestInitStamp(unittest.TestCase):
             ".claude/skills/scratchproj/workflow.md",
             "harness/adapter/adapter.yaml",
             "harness/adapter/review_rubric.md",
+            "harness/adapter/checks/policy_scan.py",
+            "harness/adapter/checks/verify_claims.py",
+            "harness/core/tests/selftest.py",
             "harness/core/tests/run_checks.sh",
+            "harness/core/cli/gate.py",
+            "harness/core/kernel/selflint.py",
             "harness/.fh/MANIFEST.json",
             "harness/.fh/answers.yaml",
         ]
         for rel in expected:
             self.assertTrue((self.target / rel).is_file(), f"missing file: {rel}")
-        for rel in ["harness/adapter/checks", "harness/eval", "harness/state",
-                    "harness/logs"]:
+        for rel in ["harness/adapter/checks", "harness/core/tests"]:
             self.assertTrue((self.target / rel).is_dir(), f"missing dir: {rel}")
+        # run_checks.sh is stamped on purpose: a short shim that runs the selflint gating tier and
+        # selftest, so a migrated project's unedited `make check` works. No other test file is
+        # stamped; the full suite stays in the template.
+        shim = (self.target / "harness/core/tests/run_checks.sh").read_text(encoding="utf-8")
+        self.assertLessEqual(len(shim.splitlines()), 20, "run_checks.sh is a short shim")
+        self.assertIn("core.kernel.selflint --tier gating", shim)
+        self.assertIn("selftest.py", shim)
+        stamped_tests = sorted(p.name for p in (self.target / "harness/core/tests").rglob("*")
+                               if p.is_file() and "__pycache__" not in p.parts)
+        self.assertEqual(stamped_tests, ["run_checks.sh", "selftest.py"])
+        self.assertFalse((self.target / "harness/adapter/oracle.py").exists())
+        self.assertFalse((self.target / "packs").exists(), "no pack was selected")
         # state/ and logs/ are gitignored
         gitignore = (self.target / ".gitignore").read_text()
         self.assertIn("harness/state/", gitignore)
@@ -103,12 +170,16 @@ class TestInitStamp(unittest.TestCase):
             self.assertEqual(actual, digest, f"hash mismatch: {rel}")
 
     def test_core_stamped_verbatim_from_template(self):
-        for src in (TEMPLATE / "core").rglob("*"):
-            if not src.is_file() or "__pycache__" in src.parts:
-                continue
-            rel = src.relative_to(TEMPLATE / "core")
+        # The verbatim check covers the stamped file list: exactly the files
+        # expected_stamped_core() names, each byte-identical to its template source.
+        expected = expected_stamped_core()
+        stamped = {p.relative_to(self.target / "harness" / "core").as_posix()
+                   for p in (self.target / "harness" / "core").rglob("*")
+                   if p.is_file() and "__pycache__" not in p.parts}
+        self.assertEqual(stamped, set(expected),
+                         "stamped core must be the template core minus packs and tests")
+        for rel, src in expected.items():
             dst = self.target / "harness/core" / rel
-            self.assertTrue(dst.is_file(), f"core file not stamped: {rel}")
             self.assertEqual(src.read_bytes(), dst.read_bytes(),
                              f"core file not verbatim: {rel}")
 
@@ -123,24 +194,22 @@ class TestInitStamp(unittest.TestCase):
             self.assertNotIn("{{FH_", text, f"leftover template token in {rel}")
 
     def test_adapter_yaml_valid(self):
-        adapter = yaml.safe_load((self.target / "harness/adapter/adapter.yaml").read_text())
-        self.assertEqual(adapter["fh_schema"], 1)
-        self.assertEqual(adapter["project"], "scratchproj")
-        self.assertEqual(adapter["artifact_noun"], "note")
-        self.assertEqual(adapter["unit_dir"], "notes")
-        wf = adapter["workflow"]
-        self.assertEqual(wf["gates"], ["composed", "checked", "verified"])
-        for gate in wf["gates"]:
-            self.assertIn(gate, wf["gate_commands"], f"no gate_command for {gate}")
-        # terminal_states was dead schema (F30): parsed, never consumed, gone
-        self.assertNotIn("terminal_states", wf)
+        # The schema-2 loader is the judge: a stamped adapter it refuses is a broken stamp.
+        cfg = load_config(self.target)
+        self.assertEqual(cfg["schema"], 2)
+        self.assertEqual(cfg["project"], "scratchproj")
+        self.assertEqual(cfg["unit_noun"], "note")
+        self.assertEqual(cfg["unit_dir"], "notes")
+        self.assertEqual(cfg["gates"], ["composed", "checked", "verified"])
         # deny seeded (answers said yes) and linked via enforces
-        self.assertTrue(adapter["policies"]["deny"], "deny policy not seeded")
-        self.assertEqual(adapter["policies"]["deny"][0]["enforces"], "no-acct")
-        # loop stamped but inert; backstops non-null (§5, §8)
-        self.assertFalse(adapter["loop"]["enabled"])
-        for key in ["max_iterations", "cost_budget_usd", "wall_clock_minutes"]:
-            self.assertIsNotNone(adapter["loop"]["backstops"][key])
+        self.assertEqual(len(cfg["deny"]), 1, "deny policy not seeded")
+        self.assertEqual(cfg["deny"][0]["enforces"], "no-acct")
+        # the policy check every gate names is declared
+        self.assertIn("policy", cfg["checks"])
+        # the legacy loop and the schema-1 keys are not stamped (plan X1 deletes core/loop/)
+        raw = yaml.safe_load((self.target / "harness/adapter/adapter.yaml").read_text())
+        for key in ("loop", "workflow", "fh_schema"):
+            self.assertNotIn(key, raw, f"schema-1 or legacy key {key!r} is stamped")
 
     def test_answers_persisted(self):
         answers = yaml.safe_load((self.target / "harness/.fh/answers.yaml").read_text())
@@ -158,16 +227,20 @@ class TestInitStamp(unittest.TestCase):
         self.assertNotIn("harness/state/", tracked)
         self.assertNotIn("harness/logs/", tracked)
 
-    def test_run_checks_green(self):
-        out = subprocess.run(["bash", "harness/core/tests/run_checks.sh"],
-                             cwd=self.target, capture_output=True, text=True)
-        self.assertEqual(out.returncode, 0,
-                         f"run_checks.sh failed:\n{out.stdout}\n{out.stderr}")
+    def test_stamped_make_check_green(self):
+        # The stamped `make check` runs the stamped run_checks.sh shim; it is the project's done entry.
+        require_template_venv()
+        seed_venv(self.target)
+        proc = make_check(self.target)
+        self.assertEqual(proc.returncode, 0, f"make check failed:\n{proc.stdout}\n{proc.stderr}")
+        self.assertIn("check: OK", proc.stdout)
 
     def test_harness_lint_gating_green_on_fresh_stamp(self):
+        # the same selflint the stamped `make check` runs first (PYTHONPATH=harness)
+        env = dict(os.environ, PYTHONPATH="harness")
         out = subprocess.run(
-            [sys.executable, "harness/core/harness_lint.py", "--tier", "gating"],
-            cwd=self.target, capture_output=True, text=True)
+            [sys.executable, "-m", "core.kernel.selflint", "--tier", "gating", "--root", "."],
+            cwd=self.target, capture_output=True, text=True, env=env)
         self.assertEqual(out.returncode, 0,
                          f"fresh stamp must be lint-clean:\n{out.stdout}\n{out.stderr}")
 
@@ -176,7 +249,7 @@ class TestInitStamp(unittest.TestCase):
         blob = json.dumps(settings)
         for hook in ["pretool_guard.py", "posttool_lint.py", "stop_gate.py",
                      "session_start.py"]:
-            self.assertIn(f"harness/core/hooks/{hook}", blob,
+            self.assertIn(f"harness/core/hosts/shims/{hook}", blob,
                           f"hook not registered: {hook}")
 
 
@@ -197,26 +270,17 @@ class TestInitModes(unittest.TestCase):
 
     def test_questionnaire_via_stdin(self):
         target = self.base / "iview"
-        # project, noun, unit dir, gates, hashed gates, seed deny?, loop?
-        stdin = "iview\nreport\nreports\ncomposed,reviewed\n\nn\nn\n"
-        proc = run_init(target, stdin=stdin)
+        proc = run_init(target, stdin=QUESTIONNAIRE_STDIN)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-        adapter = yaml.safe_load((target / "harness/adapter/adapter.yaml").read_text())
-        self.assertEqual(adapter["project"], "iview")
-        self.assertEqual(adapter["workflow"]["gates"], ["composed", "reviewed"])
-        self.assertEqual(adapter["policies"]["deny"], [])
-
-    def test_loop_enabled_stamps_oracle_skeleton(self):
-        target = self.base / "loopy"
-        answers = dict(ANSWERS, project="loopy", loop_enabled=True)
-        proc = run_init(target, answers=answers)
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-        self.assertTrue((target / "harness/adapter/oracle.py").is_file())
-        adapter = yaml.safe_load((target / "harness/adapter/adapter.yaml").read_text())
-        self.assertTrue(adapter["loop"]["enabled"])
-        self.assertEqual(adapter["loop"]["oracle"], "harness.adapter.oracle:Oracle")
+        cfg = load_config(target)
+        self.assertEqual(cfg["project"], "iview")
+        self.assertEqual(cfg["unit_noun"], "report")
+        self.assertEqual(cfg["unit_dir"], "reports")
+        self.assertEqual(cfg["gates"], ["composed", "reviewed"])
+        self.assertEqual(cfg["deny"], [])
 
     def test_no_oracle_when_loop_disabled(self):
+        # the loop is not stamped in any project; no oracle skeleton is written
         target = self.base / "noloop"
         proc = run_init(target, answers=dict(ANSWERS, project="noloop"))
         self.assertEqual(proc.returncode, 0)
@@ -250,13 +314,14 @@ class TestInitErgonomics(unittest.TestCase):
         target = self.base / "proj"
         r = run_init(target, stdin="", extra=["--defaults"])
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        adapter = yaml.safe_load(
-            (target / "harness/adapter/adapter.yaml").read_text())
-        self.assertEqual(adapter["project"], "proj")
-        self.assertFalse(adapter["loop"]["enabled"])
+        cfg = load_config(target)
+        self.assertEqual(cfg["project"], "proj")
+        self.assertEqual(cfg["gates"], ["composed", "checked", "verified"])
+        raw = yaml.safe_load((target / "harness/adapter/adapter.yaml").read_text())
+        self.assertNotIn("loop", raw, "the legacy loop is not stamped")
         log = subprocess.run(["git", "-C", str(target), "log", "--oneline"],
                              capture_output=True, text=True)
-        self.assertIn("gatebench init", log.stdout)
+        self.assertIn("gategraph init", log.stdout)
 
     def test_gitignored_harness_refused_before_write(self):
         target = self.base / "proj"
@@ -273,6 +338,83 @@ class TestInitErgonomics(unittest.TestCase):
         self.assertFalse((target / "harness").exists(),
                          "refusal must come BEFORE any write, a partial "
                          "stamp is the exact failure observed in the wild")
+
+
+class TestAnswerValidation(unittest.TestCase):
+    """B27: artifact_noun and unit_dir reach adapter.yaml, so they must be
+    safe YAML scalars (quoted) and confined (no ../, no absolute paths)."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.base = Path(self._tmp.name)
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def test_B27_yaml_boolean_words_load_as_strings(self):
+        target = self.base / "nounproj"
+        proc = run_init(target, answers=dict(ANSWERS, project="nounproj",
+                                             artifact_noun="yes", unit_dir="on"))
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        cfg = load_config(target)
+        self.assertEqual(cfg["unit_noun"], "yes")
+        self.assertEqual(cfg["unit_dir"], "on")
+
+    def test_B27_unsafe_unit_dir_refused_before_any_write(self):
+        for i, bad in enumerate(["a: b", "../x", "/abs/x", "units/../../x"]):
+            target = self.base / f"bad{i}"
+            proc = run_init(target, answers=dict(ANSWERS, unit_dir=bad))
+            self.assertNotEqual(proc.returncode, 0, f"unit_dir {bad!r} accepted")
+            self.assertNotIn("Traceback", proc.stderr, f"unit_dir {bad!r}")
+            self.assertIn("unit_dir", proc.stderr, f"unit_dir {bad!r}")
+            self.assertFalse((target / "harness").exists(),
+                             f"unit_dir {bad!r} left a partial stamp")
+            self.assertFalse((self.base / "x").exists())
+
+
+DRIVER = """\
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("gategraph_under_test", sys.argv[1])
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+def injected_failure(*args, **kwargs):
+    mod.die("injected failure after the stamp was rendered")
+mod._validate_stage = injected_failure
+mod.main(["init", sys.argv[2], "--answers", sys.argv[3]])
+"""
+
+
+class TestTransactionalInit(unittest.TestCase):
+    """B28: a failed init leaves no stamp, so a retry is not refused."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.base = Path(self._tmp.name)
+        self.answers = self.base / "answers.yaml"
+        self.answers.write_text(yaml.safe_dump(ANSWERS))
+        self.driver = self.base / "driver.py"
+        self.driver.write_text(DRIVER)
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def test_B28_failed_init_leaves_no_stamp(self):
+        target = self.base / "txn"
+        r1 = subprocess.run([sys.executable, str(self.driver), str(FH), str(target),
+                             str(self.answers)], capture_output=True, text=True)
+        self.assertNotEqual(r1.returncode, 0, "the injected failure did not fire")
+        self.assertIn("injected failure", r1.stdout + r1.stderr)
+        self.assertFalse((target / "harness" / ".fh" / "MANIFEST.json").exists(),
+                         "a failed init left a stamp manifest behind")
+        self.assertFalse((target / "harness").exists(),
+                         "a failed init left a partial stamp")
+        self.assertEqual([p.name for p in self.base.iterdir()
+                          if p.name.startswith(".txn")], [],
+                         "a failed init left its staging directory behind")
+
+        r2 = run_init(target, answers=ANSWERS)
+        self.assertEqual(r2.returncode, 0, r2.stdout + r2.stderr)
+        self.assertNotIn("already stamped", r2.stdout + r2.stderr)
 
 
 if __name__ == "__main__":

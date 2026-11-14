@@ -1,0 +1,47 @@
+# Pack schema (plan section 1.13): packs/<name>/pack.yaml. Same language as
+# adapter.v2.schema.yaml. A pack check names its command as ``cmd`` (the 1.13
+# form); the adapter check uses ``command`` (CheckSpec). K2 maps the two.
+
+id: pack.v1
+
+definitions:
+  name: &name '[a-z][a-z0-9_-]*'
+  reader: &reader
+    type: object
+    required: [match, reader]
+    additional: false
+    properties:
+      match: {type: array, items: {type: string}}
+      reader: {type: string, pattern: *name}
+  check: &check
+    type: object
+    required: [id, cmd]
+    additional: false
+    properties:
+      id: {type: string, pattern: *name}
+      cmd: {type: string}
+      on: {type: array, items: {type: string}}
+  advisory: &advisory
+    type: object
+    required: [id, cmd]
+    additional: false
+    properties:
+      id: {type: string, pattern: *name}
+      cmd: {type: string}
+
+type: object
+required: [pack, version]
+additional: false
+properties:
+  pack: {type: string, pattern: *name}
+  version: {type: integer}
+  readers: {type: array, items: *reader}
+  tools: {type: array, items: {type: string}}
+  checks: {type: array, items: *check}
+  # Each value lists gate ids of the adapter that uses the pack. Not checked here.
+  gate_presets: {type: object}
+  doctor:
+    type: object
+    additional: false
+    properties:
+      advisory: {type: array, items: *advisory}

@@ -1,0 +1,8 @@
+{
+  "event": "stop.json",
+  "hook": "stop_gate.py",
+  "args": [],
+  "stdout": "",
+  "stderr": "",
+  "exit": 0
+}

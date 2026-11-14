@@ -1,5 +1,6 @@
-# T7/T9 nightly lane: the fault-injection detectors (chaos + fuzz) plus the
-# deterministic corpus, on a schedule so they cannot silently rot.
+# Nightly lane: the deterministic corpus (make eval), on a schedule so it cannot silently rot.
+# The chaos and fuzz lanes were dropped in X1 (D4); crash recovery is covered by the
+# kill-and-proceed tests in core/tests/graph and core/tests/search.
 name: nightly
 "on":
   schedule:
@@ -7,7 +8,7 @@ name: nightly
   workflow_dispatch:
 
 jobs:
-  chaos-fuzz:
+  eval:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,6 +16,4 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install pyyaml
-      - run: make chaos
-      - run: make fuzz
       - run: make eval

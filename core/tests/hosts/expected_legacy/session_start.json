@@ -1,0 +1,8 @@
+{
+  "event": "session_start.json",
+  "hook": "session_start.py",
+  "args": [],
+  "stdout": "",
+  "stderr": "",
+  "exit": 0
+}

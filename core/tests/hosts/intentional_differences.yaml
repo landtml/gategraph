@@ -1,0 +1,42 @@
+# Cases where the new host bridge is meant to answer differently from expected_legacy/.
+# Every other recorded event must match its saved legacy reply exactly.
+#
+# Fields: bug (register id), event (recorded event the difference shows on, or null when
+# no recorded sample exercises it), legacy (what the legacy hook did), now (what the bridge
+# does), test (the test that proves the new behaviour; test_bridge checks it exists).
+differences:
+  - bug: B05
+    event: null
+    legacy: a shell command naming manifest.yaml or .active was never checked; the Bash tool had no guard.
+    now: the guard denies a shell command that names a protected path (best effort, per the threat model).
+    test: test_B05_shell_naming_a_protected_path_is_denied
+
+  - bug: B09
+    event: null
+    legacy: a warn-severity deny policy with pretool left true hard-denied the write.
+    now: warn-level findings are advice; the write is allowed.
+    test: test_B09_warn_policy_is_advice_not_deny
+
+  - bug: B10
+    event: null
+    legacy: the pre-write guard matched raw text, so fullwidth digits passed.
+    now: the guard matches normalized text (NFKC, zero-width removed), the same as the scanner.
+    test: test_B10_fullwidth_digits_denied_before_write
+
+  - bug: B31
+    event: null
+    legacy: after every shell command the whole active unit was re-linted and the stop marker was never armed.
+    now: only paths touched since the pre-tool stamp are scanned, and the session is armed when one is inside the unit.
+    test: test_B31_post_shell_scans_only_touched_paths
+
+  - bug: B35
+    event: null
+    legacy: an unhandled error in the pre-tool hook exited 0, and unparseable stdin was allowed (fail open, "never brick the session").
+    now: malformed pre-tool input is denied (fail closed); post-tool input still fails open.
+    test: test_unparseable_pre_tool_fails_closed
+
+  - bug: K6
+    event: null
+    legacy: a denial was one line, "[policy id] summary (adapter.yaml deny policy)", with no rule, reason or remedy.
+    now: the deny text comes from guard.denial_message (rule id, reason, remedy, and the sentence that policy outranks the task). No bug-table id; K6 is the task that wrote the guard.
+    test: test_denial_reason_is_guard_denial_message_text

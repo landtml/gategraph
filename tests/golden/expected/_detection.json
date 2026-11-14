@@ -1,0 +1,1633 @@
+{
+  "clean-summary-full": {
+    "findings": [],
+    "path": "dossiers/case/summary.tex",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "clean-main-full": {
+    "findings": [],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "clean-date-ranges": {
+    "findings": [],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "clean-appendix-page-count": {
+    "findings": [],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "clean-statement": {
+    "findings": [],
+    "path": "dossiers/case/method.tex",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "acct-basic-contact-line": {
+    "findings": [
+      [
+        "acct",
+        "fatal",
+        2,
+        "no account number on disk, anywhere"
+      ]
+    ],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "acct-date-formats-clean": {
+    "findings": [],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "acct-glued-to-text": {
+    "findings": [
+      [
+        "acct",
+        "fatal",
+        1,
+        "no account number on disk, anywhere"
+      ]
+    ],
+    "path": "dossiers/case/summary.tex",
+    "seeds": [
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "acct-hyphenated-timestamp-fires": {
+    "findings": [
+      [
+        "acct",
+        "fatal",
+        1,
+        "no account number on disk, anywhere"
+      ]
+    ],
+    "path": "dossiers/case/notes.tex",
+    "seeds": [
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "acct-in-latex-macro": {
+    "findings": [
+      [
+        "acct",
+        "fatal",
+        1,
+        "no account number on disk, anywhere"
+      ]
+    ],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "acct-outside-unit-scope-any": {
+    "findings": [
+      [
+        "acct",
+        "fatal",
+        1,
+        "no account number on disk, anywhere"
+      ]
+    ],
+    "path": "notes/scratchpad.md",
+    "seeds": [
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "acct-phone-number-clean": {
+    "findings": [],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "acct-spaced-hyphen": {
+    "findings": [
+      [
+        "acct",
+        "fatal",
+        1,
+        "no account number on disk, anywhere"
+      ]
+    ],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "acct"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "disclosure-client-name": {
+    "findings": [
+      [
+        "disclosure-client",
+        "fatal",
+        1,
+        "confidential client name in a rendered document"
+      ]
+    ],
+    "path": "dossiers/case/summary.tex",
+    "seeds": [
+      {
+        "fired": [
+          "disclosure-client"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "disclosure-client"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "disclosure-client"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "disclosure-client"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "disclosure-client"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "disclosure-client-uppercase": {
+    "findings": [
+      [
+        "disclosure-client",
+        "fatal",
+        1,
+        "confidential client name in a rendered document"
+      ]
+    ],
+    "path": "dossiers/case/summary.tex",
+    "seeds": [
+      {
+        "fired": [
+          "disclosure-client"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "disclosure-client"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "disclosure-client"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "disclosure-client"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "disclosure-client"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "disclosure-generic-clean": {
+    "findings": [],
+    "path": "dossiers/case/summary.tex",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "disclosure-out-of-scope-clean": {
+    "findings": [],
+    "path": "dossiers/case/research-notes.md",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "disclosure-product-name": {
+    "findings": [
+      [
+        "disclosure-product",
+        "fatal",
+        1,
+        "confidential product name in a rendered document"
+      ]
+    ],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [
+          "disclosure-product"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "disclosure-product"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "disclosure-product"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "disclosure-product"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "disclosure-product"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "tariffs-net-margin": {
+    "findings": [
+      [
+        "tariffs",
+        "fatal",
+        1,
+        "tariffs are internal-only"
+      ]
+    ],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [
+          "tariffs"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "tariffs"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "tariffs"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "tariffs"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "tariffs"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "tariffs-discount-rate": {
+    "findings": [
+      [
+        "tariffs",
+        "fatal",
+        1,
+        "tariffs are internal-only"
+      ]
+    ],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [
+          "tariffs"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "tariffs"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "tariffs"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "tariffs"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "tariffs"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "tariffs-page-count-clean": {
+    "findings": [],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "tariffs-list-price": {
+    "findings": [
+      [
+        "tariffs",
+        "fatal",
+        2,
+        "tariffs are internal-only"
+      ]
+    ],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [
+          "tariffs"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "tariffs"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "tariffs"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "tariffs"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "tariffs"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "tariffs-out-of-scope-clean": {
+    "findings": [],
+    "path": "dossiers/case/evaluation.md",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "scratch-section-todo": {
+    "findings": [
+      [
+        "scratch-section",
+        "fatal",
+        1,
+        "no scratch sections in a dossier"
+      ]
+    ],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [
+          "scratch-section"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "scratch-section"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "scratch-section"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "scratch-section"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "scratch-section"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "scratch-section-scratchpad": {
+    "findings": [
+      [
+        "scratch-section",
+        "fatal",
+        1,
+        "no scratch sections in a dossier"
+      ]
+    ],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [
+          "scratch-section"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "scratch-section"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "scratch-section"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "scratch-section"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "scratch-section"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "scratch-subsection-clean": {
+    "findings": [],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "notes-scope-summary-clean": {
+    "findings": [],
+    "path": "dossiers/case/summary.tex",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "notes-section-plain": {
+    "findings": [
+      [
+        "notes-section",
+        "fatal",
+        1,
+        "no Internal Notes section in a dossier"
+      ]
+    ],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [
+          "notes-section"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "notes-section"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "notes-section"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "notes-section"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "notes-section"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "notes-section-inner-spaces": {
+    "findings": [
+      [
+        "notes-section",
+        "fatal",
+        1,
+        "no Internal Notes section in a dossier"
+      ]
+    ],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [
+          "notes-section"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "notes-section"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "notes-section"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "notes-section"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "notes-section"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "style-buzzword-boundary-clean": {
+    "findings": [],
+    "path": "dossiers/case/summary.tex",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "style-buzzword-leveraging": {
+    "findings": [
+      [
+        "style-buzzwords",
+        "warn",
+        1,
+        "AI-tell buzzword"
+      ]
+    ],
+    "path": "dossiers/case/summary.tex",
+    "seeds": [
+      {
+        "fired": [
+          "style-buzzwords"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-buzzwords"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-buzzwords"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-buzzwords"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-buzzwords"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "style-buzzword-robust": {
+    "findings": [
+      [
+        "style-buzzwords",
+        "warn",
+        1,
+        "AI-tell buzzword"
+      ]
+    ],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [
+          "style-buzzwords"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-buzzwords"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-buzzwords"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-buzzwords"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-buzzwords"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "style-shouting": {
+    "findings": [
+      [
+        "shouting",
+        "warn",
+        1,
+        "no repeated exclamation marks"
+      ]
+    ],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [
+          "shouting"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "shouting"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "shouting"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "shouting"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "shouting"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "style-single-exclaim-clean": {
+    "findings": [],
+    "path": "dossiers/case/main.tex",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "style-cliche-in-conclusion": {
+    "findings": [
+      [
+        "style-cliche",
+        "warn",
+        1,
+        "cliché filler"
+      ]
+    ],
+    "path": "dossiers/case/summary.tex",
+    "seeds": [
+      {
+        "fired": [
+          "style-cliche"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-cliche"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-cliche"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-cliche"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-cliche"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "style-emdash-tex-triple": {
+    "findings": [
+      [
+        "style-emdash",
+        "warn",
+        1,
+        "em-dash in a rendered document"
+      ]
+    ],
+    "path": "dossiers/case/summary.tex",
+    "seeds": [
+      {
+        "fired": [
+          "style-emdash"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-emdash"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-emdash"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-emdash"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-emdash"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "style-emdash-unicode": {
+    "findings": [
+      [
+        "style-emdash",
+        "warn",
+        1,
+        "em-dash in a rendered document"
+      ]
+    ],
+    "path": "dossiers/case/summary.tex",
+    "seeds": [
+      {
+        "fired": [
+          "style-emdash"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-emdash"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-emdash"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-emdash"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-emdash"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "style-not-just-construction": {
+    "findings": [
+      [
+        "style-not-just",
+        "warn",
+        1,
+        "'not just X but Y' construction"
+      ]
+    ],
+    "path": "dossiers/case/summary.tex",
+    "seeds": [
+      {
+        "fired": [
+          "style-not-just"
+        ],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-not-just"
+        ],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-not-just"
+        ],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-not-just"
+        ],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [
+          "style-not-just"
+        ],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "style-not-just-no-but-clean": {
+    "findings": [],
+    "path": "dossiers/case/summary.tex",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  },
+  "style-out-of-scope-clean": {
+    "findings": [],
+    "path": "dossiers/case/notes.md",
+    "seeds": [
+      {
+        "fired": [],
+        "seed": 0,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 1,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 2,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 3,
+        "trial_pass": true
+      },
+      {
+        "fired": [],
+        "seed": 4,
+        "trial_pass": true
+      }
+    ]
+  }
+}

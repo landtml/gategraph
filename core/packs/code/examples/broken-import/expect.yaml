@@ -1,0 +1,4 @@
+# variant.py has a syntax error: the variant does not import.
+gate: imported
+check: imports
+rule: imports.import_failed

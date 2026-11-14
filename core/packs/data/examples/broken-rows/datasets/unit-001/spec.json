@@ -1,0 +1,13 @@
+{
+  "source": {"kind": "csv", "path": "rows.csv"},
+  "columns": [
+    {"name": "order_id", "type": "integer"},
+    {"name": "placed_on", "type": "date"},
+    {"name": "region", "type": "text"},
+    {"name": "amount", "type": "decimal"},
+    {"name": "note", "type": "text"}
+  ],
+  "rows": {"min": 3, "max": 20},
+  "max_null_rate": 0.3,
+  "totals": [{"column": "amount", "declared": "918.99"}]
+}

@@ -1,0 +1,4 @@
+# The first gate that must fail, the check that fails it, and the finding rule.
+gate: declared
+check: data-schema
+rule: schema.missing-column

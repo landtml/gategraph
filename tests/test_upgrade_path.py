@@ -1,15 +1,15 @@
 """T11: the upgrade path, tested per release, plus the F25 sync-path fixes.
 
 Two layers:
-- ``TestManifestAndSidecars`` (scratch template copy, fast): `gatebench diff` must
-  report upstream ADDITIONS (not claim "pristine and current" while `gatebench update`
+- ``TestManifestAndSidecars`` (scratch template copy, fast): `gategraph diff` must
+  report upstream ADDITIONS (not claim "pristine and current" while `gategraph update`
   would stamp new files); a corrupt MANIFEST.json is a typed refusal, never a
   traceback; a resolved ``.fhnew`` sidecar is cleaned up by the next update
   instead of living forever (the seed gitignores ``*.fhnew``, so git can't
   surface it either).
 - ``TestUpgradeFromPreviousRelease``: stamps the PREVIOUS git tag's template
   into a scratch project, ages it realistically (local core hotfix, deleted
-  core file, adapter edit), then runs HEAD's `gatebench update` through the real sync
+  core file, adapter edit), then runs HEAD's `gategraph update` through the real sync
   path: the F9 rehearsal in permanent, per-release form. This leg is what
   keeps the consumer-A 0.1.0 → current rehearsal honest before it happens.
 """
@@ -45,7 +45,7 @@ class Base(unittest.TestCase):
         base = Path(self._tmp.name)
         self.template = base / "template"
         self.template.mkdir()
-        for item in ("gatebench.py", "VERSION", "core", "seed"):
+        for item in ("gategraph.py", "VERSION", "core", "seed"):
             src = TEMPLATE / item
             if src.is_dir():
                 shutil.copytree(src, self.template / item,
@@ -60,11 +60,11 @@ class Base(unittest.TestCase):
         self._tmp.cleanup()
 
     def fh(self, *args):
-        return subprocess.run([sys.executable, str(self.template / "gatebench.py"), *args],
+        return subprocess.run([sys.executable, str(self.template / "gategraph.py"), *args],
                               capture_output=True, text=True)
 
     def bump_template(self):
-        self.template.joinpath("VERSION").write_text("0.0.2\n")
+        self.template.joinpath("VERSION").write_text("9.0.0\n")
 
 
 class TestManifestAndSidecars(Base):
@@ -74,7 +74,7 @@ class TestManifestAndSidecars(Base):
         r = self.fh("diff", str(self.project))
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)  # additions are not local drift
         self.assertIn("new upstream", r.stdout,
-                      "diff must not hide files `gatebench update` would stamp:\n" + r.stdout)
+                      "diff must not hide files `gategraph update` would stamp:\n" + r.stdout)
         self.assertIn("brand_new.py", r.stdout)
         self.assertNotIn("pristine and current", r.stdout)
 
@@ -129,7 +129,7 @@ class TestUpgradeFromPreviousRelease(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        r = subprocess.run(["git", "-C", str(TEMPLATE), "describe", "--tags",
+        r = subprocess.run(["git", "-C", str(TEMPLATE), "describe", "--tags", "--exclude", "legacy-*",
                             "--abbrev=0"], capture_output=True, text=True)
         if r.returncode != 0 or not r.stdout.strip():
             raise unittest.SkipTest("no release tag reachable (shallow checkout?)")
@@ -157,7 +157,7 @@ class TestUpgradeFromPreviousRelease(unittest.TestCase):
             cls._tmp.cleanup()
 
     def fh_head(self, *args):
-        return subprocess.run([sys.executable, str(TEMPLATE / "gatebench.py"), *args],
+        return subprocess.run([sys.executable, str(TEMPLATE / "gategraph.py"), *args],
                               capture_output=True, text=True)
 
     def test_full_upgrade_previous_tag_to_head(self):
@@ -175,7 +175,7 @@ class TestUpgradeFromPreviousRelease(unittest.TestCase):
         self.assertEqual(r.returncode, 1, "local drift must exit 1:\n" + r.stdout)
         self.assertIn("PROTOCOL.md", r.stdout)
         self.assertIn("reap.py", r.stdout)
-        if (TEMPLATE / "core/tests/test_boundary.py").exists():  # added post-v0.3.0
+        if (TEMPLATE / "core/tests/hosts/test_boundary_hosts.py").exists():  # added after the last release
             self.assertIn("new upstream", r.stdout,
                           f"diff hid the upstream additions since {self.prev_tag}:\n"
                           + r.stdout)
@@ -190,9 +190,9 @@ class TestUpgradeFromPreviousRelease(unittest.TestCase):
         self.assertTrue(deleted.exists(), "deleted core file must be restored")
         self.assertIn("# local adapter note", adapter.read_text(),
                       "update must never touch the adapter layer")
-        if (TEMPLATE / "core/tests/test_boundary.py").exists():
+        if (TEMPLATE / "core/tests/hosts/test_boundary_hosts.py").exists():
             self.assertTrue(
-                (project / "harness/core/tests/test_boundary.py").exists(),
+                (project / "harness/core/tests/hosts/test_boundary_hosts.py").exists(),
                 f"upstream additions since {self.prev_tag} were not stamped")
         manifest = json.loads((project / "harness/.fh/MANIFEST.json").read_text())
         self.assertEqual(manifest["version"],

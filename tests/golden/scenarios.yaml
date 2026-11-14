@@ -1,0 +1,404 @@
+# Golden scenarios: scripted runs of the LEGACY gate engine (core/gate.py,
+# core/lint.py, core/manifest.py) against a temporary stamped project built
+# from eval/pack's adapter. make_golden.py records, after every step, the exit
+# code, status, effective gates, stale gates, next gate and active unit.
+#
+# Step ops (unit defaults to the scenario's `unit`, itself default "u1"):
+#   start {title?, session?}   approve {gate}   lint {set_gate?, file?}
+#   pause  proceed  abandon  repair  status      escalate {note}
+#   write|edit|add {file, content}   delete {file}   (file is unit-relative)
+#   tool_set {gate, hash_extra?}   what a producing tool does: Manifest.set_gate
+#                                  (+ sha256 map when the gate is hashed)
+#   earn {upto}                    macro: scope_confirmed by approve, composed by
+#                                  tool_set, lint_passed by lint, pdf_verified
+#                                  and packaged by tool_set, up to and incl. G
+#   manifest_edit {set: {key: value}}   shallow-merge raw keys into manifest
+#   manifest_text {text}           overwrite manifest with raw text
+# Placeholder {{ACCOUNT}} expands at run time (no ID-shaped literal on disk).
+# A scenario with `legacy_bug: Bnn` records buggy legacy output on purpose.
+# `adapter:` deep-merges into the pack adapter (workflow lists etc.).
+
+# ---------------------------------------------------------------- lifecycle
+- id: start-fresh
+  steps:
+    - {op: start, title: First}
+    - {op: status}
+
+- id: start-idempotent-preserves-evidence
+  steps:
+    - {op: start}
+    - {op: approve, gate: scope_confirmed}
+    - {op: start}
+
+- id: start-second-unit-blocked
+  steps:
+    - {op: start}
+    - {op: start, unit: u2}
+
+- id: start-takes-over-paused
+  steps:
+    - {op: start}
+    - {op: pause}
+    - {op: start, unit: u2}
+    - {op: status, unit: u1}
+
+- id: start-invalid-slug
+  steps:
+    - {op: start, unit: "../evil"}
+    - {op: start, unit: "-x"}
+
+- id: status-no-active
+  steps:
+    - {op: status, unit: ""}
+
+- id: pause-proceed
+  steps:
+    - {op: start}
+    - {op: approve, gate: scope_confirmed}
+    - {op: pause}
+    - {op: proceed}
+
+- id: proceed-blocked-by-other-active
+  steps:
+    - {op: start}
+    - {op: pause}
+    - {op: start, unit: u2}
+    - {op: proceed, unit: u1}
+
+- id: proceed-abandoned-refused
+  steps:
+    - {op: start}
+    - {op: abandon}
+    - {op: proceed}
+
+- id: start-abandoned-refused
+  steps:
+    - {op: start}
+    - {op: abandon}
+    - {op: start}
+
+- id: escalate-is-terminal-for-start
+  steps:
+    - {op: start}
+    - {op: escalate, note: stuck}
+    - {op: start}
+    - {op: proceed}
+
+- id: escalate-clears-active
+  steps:
+    - {op: start}
+    - {op: escalate, note: no idea}
+    - {op: status}
+
+- id: repair-valid-manifest
+  steps:
+    - {op: start}
+    - {op: approve, gate: scope_confirmed}
+    - {op: repair}
+
+- id: repair-corrupt-rebuilds
+  steps:
+    - {op: start}
+    - {op: approve, gate: scope_confirmed}
+    - {op: manifest_text, text: "slug: u1\nstatus: [oops"}
+    - {op: status}
+    - {op: repair}
+
+- id: corrupt-manifest-missing-keys
+  steps:
+    - {op: start}
+    - {op: manifest_text, text: "slug: u1\n"}
+    - {op: approve, gate: scope_confirmed}
+    - {op: pause}
+
+- id: approve-unknown-unit
+  steps:
+    - {op: approve, gate: scope_confirmed, unit: ghost}
+    - {op: status, unit: ghost}
+
+- id: approve-unknown-gate
+  steps:
+    - {op: start}
+    - {op: approve, gate: nonsense}
+
+- id: approve-tool-set-gate-refused
+  steps:
+    - {op: start}
+    - {op: approve, gate: scope_confirmed}
+    - {op: approve, gate: composed}
+    - {op: approve, gate: packaged}
+
+- id: complete-unit
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "\\section{Experience}\nBuilt things.\n"}
+    - {op: earn, upto: packaged}
+
+# ---------------------------------------------------------------- machinery
+# eval/corpus/machinery.yaml, driven through the CLI as well as the runner
+# (machinery.json holds the runner verdicts).
+- id: mach-out-of-order-refused
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "hello\n"}
+    - {op: tool_set, gate: composed}
+    - {op: lint, set_gate: lint_passed}
+    - {op: tool_set, gate: pdf_verified}
+    - {op: lint, set_gate: pdf_verified}
+
+- id: mach-staleness-reopens
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "version one\n"}
+    - {op: earn, upto: lint_passed}
+    - {op: edit, file: main.tex, content: "version two\n"}
+
+- id: mach-reset-invalidates-later
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "x\n"}
+    - {op: earn, upto: pdf_verified}
+    - {op: approve, gate: scope_confirmed}
+    - {op: lint, set_gate: lint_passed}
+
+- id: mach-escalate-terminal
+  steps:
+    - {op: start}
+    - {op: approve, gate: scope_confirmed}
+    - {op: escalate, note: eval scenario}
+    - {op: status}
+
+# ---------------------------------------------------------------- staleness
+- id: stale-edit-reopens-downstream-chain
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "a\n"}
+    - {op: earn, upto: packaged}
+    - {op: edit, file: main.tex, content: "b\n"}
+
+- id: stale-added-file-reopens-gate
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "a\n"}
+    - {op: earn, upto: lint_passed}
+    - {op: add, file: summary.tex, content: "new artifact\n"}
+    - {op: lint, set_gate: lint_passed}
+
+- id: stale-deleted-file-reopens-gate
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "a\n"}
+    - {op: write, file: summary.tex, content: "b\n"}
+    - {op: earn, upto: lint_passed}
+    - {op: delete, file: summary.tex}
+
+- id: stale-relint-after-edit-recovers
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "a\n"}
+    - {op: earn, upto: lint_passed}
+    - {op: edit, file: main.tex, content: "changed\n"}
+    - {op: lint, set_gate: lint_passed}
+
+- id: stale-nested-file-covered
+  steps:
+    - {op: start}
+    - {op: write, file: sub/deep.tex, content: "a\n"}
+    - {op: earn, upto: lint_passed}
+    - {op: edit, file: sub/deep.tex, content: "b\n"}
+
+- id: stale-unhashed-gate-ignores-edits
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "a\n"}
+    - {op: approve, gate: scope_confirmed}
+    - {op: tool_set, gate: composed}
+    - {op: edit, file: main.tex, content: "b\n"}
+    - {op: add, file: extra.tex, content: "c\n"}
+
+- id: stale-declared-evidence-exempt-midflow
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "a\n"}
+    - {op: earn, upto: lint_passed}
+    - {op: add, file: review.json, content: "{}\n"}
+
+- id: stale-final-gate-not-exempt
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "a\n"}
+    - {op: earn, upto: packaged}
+    - {op: add, file: review.json, content: "{}\n"}
+
+- id: stale-manifest-file-excluded
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "a\n"}
+    - {op: earn, upto: packaged}
+    - {op: pause}
+    - {op: proceed}
+
+# --------------------------------------------------------------------- lint
+- id: lint-empty-unit-refused
+  steps:
+    - {op: start}
+    - {op: approve, gate: scope_confirmed}
+    - {op: tool_set, gate: composed}
+    - {op: lint, set_gate: lint_passed}
+    - {op: lint}
+
+- id: lint-fatal-acct-blocks-gate
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "ID: {{ACCOUNT}}\n"}
+    - {op: approve, gate: scope_confirmed}
+    - {op: tool_set, gate: composed}
+    - {op: lint, set_gate: lint_passed}
+    - {op: edit, file: main.tex, content: "clean now\n"}
+    - {op: lint, set_gate: lint_passed}
+
+- id: lint-fatal-tariffs-in-tex
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "list price 4.0\n"}
+    - {op: lint}
+    - {op: write, file: notes.md, content: "list price 4.0\n"}
+    - {op: lint, file: notes.md}
+
+- id: lint-warn-advisory-sets-gate
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "We leverage a robust stack.\n"}
+    - {op: approve, gate: scope_confirmed}
+    - {op: tool_set, gate: composed}
+    - {op: lint, set_gate: lint_passed}
+
+- id: lint-no-manifest
+  steps:
+    - {op: write, file: main.tex, content: "a\n", unit: orphan}
+    - {op: lint, set_gate: lint_passed, unit: orphan}
+
+- id: lint-unknown-unit
+  steps:
+    - {op: lint, unit: ghost}
+
+- id: lint-fail-streak-threshold
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "ID: {{ACCOUNT}}\n"}
+    - {op: lint}
+    - {op: lint}
+    - {op: lint}
+    - {op: edit, file: main.tex, content: "ok\n"}
+    - {op: lint}
+
+- id: lint-disclosure-and-sections
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "\\section{References}\nAcmeSecret\n"}
+    - {op: lint}
+
+# --------------------------------------------------------------- legacy bugs
+- id: bug-B01-lint-sets-any-gate
+  legacy_bug: B01
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "x\n"}
+    - {op: approve, gate: scope_confirmed}
+    - {op: lint, set_gate: composed}
+
+- id: bug-B01-lint-completes-chain
+  legacy_bug: B01
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "x\n"}
+    - {op: approve, gate: scope_confirmed}
+    - {op: lint, set_gate: composed}
+    - {op: lint, set_gate: lint_passed}
+    - {op: lint, set_gate: pdf_verified}
+    - {op: lint, set_gate: packaged}
+
+- id: bug-B02-pause-after-escalate-proceeds
+  legacy_bug: B02
+  steps:
+    - {op: start}
+    - {op: escalate, note: stuck}
+    - {op: pause}
+    - {op: proceed}
+
+- id: bug-B03-approve-on-escalated-unit
+  legacy_bug: B03
+  steps:
+    - {op: start}
+    - {op: escalate, note: stuck}
+    - {op: approve, gate: scope_confirmed}
+
+- id: bug-B03-lint-sets-gate-on-escalated-unit
+  legacy_bug: B03
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "x\n"}
+    - {op: approve, gate: scope_confirmed}
+    - {op: tool_set, gate: composed}
+    - {op: escalate, note: stuck}
+    - {op: lint, set_gate: lint_passed}
+
+- id: bug-B03-approve-on-abandoned-unit
+  legacy_bug: B03
+  steps:
+    - {op: start}
+    - {op: abandon}
+    - {op: approve, gate: scope_confirmed}
+
+- id: bug-B04-hashed-not-toolset-approved-by-hand
+  legacy_bug: B04
+  adapter:
+    workflow:
+      hashed_gates: [scope_confirmed, lint_passed, pdf_verified, packaged]
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "a\n"}
+    - {op: approve, gate: scope_confirmed}
+    - {op: edit, file: main.tex, content: "b\n"}
+    - {op: add, file: summary.tex, content: "c\n"}
+
+- id: bug-B33-bare-string-record-passes
+  legacy_bug: B33
+  steps:
+    - {op: start}
+    - {op: manifest_edit, set: {gates: {scope_confirmed: "yes"}}}
+    - {op: status}
+    - {op: approve, gate: scope_confirmed}
+
+- id: bug-B33-bare-string-on-hashed-gate-crashes
+  legacy_bug: B33
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "a\n"}
+    - {op: manifest_edit, set: {gates: {scope_confirmed: {at: t}, composed: {at: t}, lint_passed: "yes"}}}
+    - {op: status}
+    - {op: pause}
+
+- id: bug-B33-recorded-path-escapes-unit
+  legacy_bug: B33
+  steps:
+    - {op: start}
+    - {op: write, file: main.tex, content: "a\n"}
+    - {op: write, file: ../outside.txt, content: "elsewhere\n"}
+    - {op: approve, gate: scope_confirmed}
+    - {op: tool_set, gate: composed}
+    - {op: tool_set, gate: lint_passed, hash_extra: ["../outside.txt"]}
+    - {op: edit, file: ../outside.txt, content: "changed\n"}
+
+- id: bug-B39-abandon-unknown-unit
+  legacy_bug: B39
+  steps:
+    - {op: abandon, unit: ghost}
+    - {op: status, unit: ghost}
+
+- id: bug-B39-abandon-overwrites-escalated
+  legacy_bug: B39
+  steps:
+    - {op: start}
+    - {op: escalate, note: stuck}
+    - {op: abandon}

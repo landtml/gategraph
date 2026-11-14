@@ -1,0 +1,75 @@
+{
+  "id": "mach-out-of-order-refused",
+  "steps": [
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 0,
+      "next": "scope_confirmed",
+      "op": "start",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 1,
+      "next": "scope_confirmed",
+      "op": "write",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 1,
+      "gate": "composed",
+      "i": 2,
+      "next": "scope_confirmed",
+      "op": "tool_set",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 2,
+      "gate": "lint_passed",
+      "i": 3,
+      "next": "scope_confirmed",
+      "op": "lint",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 1,
+      "gate": "pdf_verified",
+      "i": 4,
+      "next": "scope_confirmed",
+      "op": "tool_set",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 2,
+      "gate": "pdf_verified",
+      "i": 5,
+      "next": "scope_confirmed",
+      "op": "lint",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    }
+  ]
+}

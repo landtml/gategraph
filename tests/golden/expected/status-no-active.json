@@ -1,0 +1,14 @@
+{
+  "id": "status-no-active",
+  "steps": [
+    {
+      "active": null,
+      "exit": 0,
+      "i": 0,
+      "manifest": "missing",
+      "op": "status",
+      "says_unit_complete": false,
+      "unit": ""
+    }
+  ]
+}

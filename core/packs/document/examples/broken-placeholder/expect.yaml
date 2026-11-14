@@ -1,0 +1,4 @@
+# The unit the external actor must refuse, and why.
+gate: composed
+check: no-placeholders
+rule: document.placeholder

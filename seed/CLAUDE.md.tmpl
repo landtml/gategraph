@@ -1,6 +1,6 @@
 # {{FH_PROJECT}}
 
-One unit of work = one **{{FH_ARTIFACT_NOUN}}** (lives in `{{FH_UNIT_DIR}}/`).
+One unit of work = one **{{FH_ARTIFACT_NOUN}}** (lives in `{{FH_UNIT_DIR}}/<slug>/`).
 
 ## Router, less but right (open 2-5 files, never "read everything")
 
@@ -8,18 +8,21 @@ One unit of work = one **{{FH_ARTIFACT_NOUN}}** (lives in `{{FH_UNIT_DIR}}/`).
 |---|---|
 | Any session start | `MEMORY.md` (memory router), `HANDOFF.md` |
 | Working a unit | `.claude/skills/{{FH_PROJECT}}/workflow.md` (canonical workflow) |
-| Session discipline | `harness/core/PROTOCOL.md` |
 | Changing enforcement | `harness/adapter/adapter.yaml` (single source of truth) |
 
 ## Harness contract (enforced, not advisory)
 
 - `make check` is the only definition of "done". `PROGRESS.yaml` items flip
   `passes: true` only on a green `make check` and must name their `evidence:`.
-- Gates are managed by `harness/core/gate.py`; the next-step command for every
-  gate lives ONLY in `adapter.yaml` `workflow.gate_commands`.
-- Evidence over opinion: no gate advances without the artifact its check produces.
-- Do not edit files under `harness/core/`: they are template-owned
-  (`gatebench update` syncs them). Project enforcement grows in `harness/adapter/`.
+- The gate command is `.venv/bin/python harness/core/cli/gate.py`. Its verbs are
+  `start`, `attempt <gate>`, `proceed`, `pending`, `status` and `verify`. Each refusal
+  prints the command to run next.
+- A gate passes only through its checks (`attempt`) or an answered approval (`proceed`).
+  Nothing sets a gate by name.
+- Evidence over opinion: no gate advances without the artifact its checks read.
+- Do not edit files under `harness/core/`: they are template-owned (`gategraph update`
+  syncs them). Project enforcement grows in `harness/adapter/` and `packs/`.
+- Run `make venv` once before the first gate command (it builds `.venv` from the lock).
 
 ## Project rules
 

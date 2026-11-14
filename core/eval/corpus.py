@@ -7,8 +7,8 @@ A case is one YAML mapping in `<corpus_dir>/*.yaml`. Three kinds:
   real policy engine, this is the precision/recall regression net for the pack.
 - ``machinery``: a named evidence-chain scenario (out-of-order refusal, staleness
   reopen, …) run against the real manifest code.
-- ``live``: a sketching prompt + gold checks, consumed only by the paired A/B
-  (`core/eval/ab.py`), never by the deterministic runner.
+- ``live``: a model prompt + gold checks, for a live run; the deterministic runner
+  skips it.
 
 Every case carries ``set: iterate|heldout`` (tune only against iterate; heldout
 is never tuned against) and ``adversarial: true|false`` (~20% target).

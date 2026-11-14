@@ -1,0 +1,28 @@
+# The gate example of plan section 1.7, with the checks it names defined.
+# claims-have-sources and sources-resolve come from the research pack, and
+# render from the document pack; the validator does not resolve pack names.
+schema: 2
+project: research-example
+unit_noun: report
+unit_dir: reports
+packs: [document, research]
+checks:
+  - {id: required-sections, command: "python3 harness/adapter/checks/required_sections.py --unit {unit}", severity: fatal}
+  - {id: policy, command: "python3 harness/adapter/checks/policy.py --unit {unit}", severity: fatal}
+  - {id: style, command: "python3 harness/adapter/checks/style.py --unit {unit}", severity: warn}
+  - {id: bundle, command: "python3 harness/adapter/checks/bundle.py --unit {unit}", severity: fatal, on: ["build/**"]}
+gates:
+  - id: scoped
+    approval: {required: true, channel: tty}
+  - id: composed
+    checks: [required-sections]
+  - id: verified
+    checks: [policy, claims-have-sources, style]
+    verifiers: [{rubric: harness/adapter/review_rubric.md, n: 3, model: reviewer}]
+    surface: {include: ["**/*.md", "sources/**"], exclude: ["build/**"]}
+    repair: {max_attempts: 2}
+  - id: packaged
+    needs: [verified]
+    checks: [render, bundle]
+    produces: ["build/**"]
+    seals_unit: true

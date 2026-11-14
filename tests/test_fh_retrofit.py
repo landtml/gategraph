@@ -1,14 +1,14 @@
-"""F11: `gatebench init` must be safe on dirty real repos (+F10 selfcheck skip).
+"""F11: `gategraph init` must be safe on dirty real repos (+F10 selfcheck skip).
 
 The P6 retrofit near-loss, as tests: the seed OVERWROTE a live-edited
 HANDOFF.md and the stamp commit's `git add -A` swept ~106 uncommitted user
 files. The contract now:
 
-- default `gatebench init` REFUSES (typed, before writing anything) when the target
+- default `gategraph init` REFUSES (typed, before writing anything) when the target
   already contains files the seed would overwrite, naming them and pointing
   at --retrofit;
-- `gatebench init --retrofit` preserves every existing seed-target file (template
-  version lands beside it as `.fhnew`, the same convention `gatebench update` uses) and the
+- `gategraph init --retrofit` preserves every existing seed-target file (template
+  version lands beside it as `.fhnew`, the same convention `gategraph update` uses) and the
   stamp commit contains ONLY what init created, user files stay untracked /
   unstaged / staged-but-uncommitted exactly as they were;
 - F10: FH_SKIP_STAMP_SELFCHECK=1 skips the stamp self-check for test rigs
@@ -51,7 +51,7 @@ class Base(unittest.TestCase):
     def init(self, *extra, env_extra=None):
         env = dict(os.environ, **(env_extra or {}))
         return subprocess.run(
-            [sys.executable, str(TEMPLATE / "gatebench.py"), "init", str(self.repo),
+            [sys.executable, str(TEMPLATE / "gategraph.py"), "init", str(self.repo),
              "--answers", str(self.answers), *extra],
             capture_output=True, text=True, env=env)
 
@@ -112,6 +112,31 @@ class TestRetrofitInit(Base):
         self.assertIn("?? research.txt", status)
         self.assertIn("A  staged.txt", status, "user's staged file must stay staged")
         self.assertIn(" M app.tex", status, "user's unstaged edit must survive")
+
+
+class TestRetrofitStagesOnlyWhatInitWrote(Base):
+    def test_B15_retrofit_commits_only_created_paths(self):
+        # untracked user files inside the directories init also writes into
+        git(self.repo, "init", "-b", "main")
+        (self.repo / ".claude").mkdir()
+        (self.repo / ".claude" / "mine.md").write_text("my private notes\n")
+        (self.repo / "harness").mkdir()
+        (self.repo / "harness" / "scratch.txt").write_text("untracked user file\n")
+
+        r = self.init("--retrofit", env_extra={"FH_SKIP_STAMP_SELFCHECK": "1"})
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+        status = git(self.repo, "status", "--porcelain",
+                     "--untracked-files=all").stdout
+        self.assertIn("?? .claude/mine.md", status,
+                      "an untracked user file under .claude/ was swept into the stamp")
+        self.assertIn("?? harness/scratch.txt", status)
+        head = git(self.repo, "show", "--name-only", "--format=", "HEAD").stdout
+        self.assertNotIn(".claude/mine.md", head)
+        self.assertNotIn("harness/scratch.txt", head)
+        # the files init created are all committed
+        self.assertIn(".claude/settings.json", head)
+        self.assertIn("harness/core/gate.py", head)
 
 
 class TestSelfcheckSkipEnv(Base):

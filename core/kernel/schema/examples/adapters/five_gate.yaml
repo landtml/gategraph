@@ -1,0 +1,72 @@
+# The gate chain of the schema-1 eval pack adapter (workflow.gates; copy in core/tests/kernel/fixtures/eval_pack_v1),
+# in schema 2. Every gate needs the previous one by default. scope_confirmed is
+# a human approval; the last gate seals the unit. The lint_passed gate runs the
+# built-in policy scan (the policy check, as config_v1 translates a lint producer),
+# not lint.py, which refuses --unit.
+schema: 2
+project: five-gate-example
+unit_noun: dossier
+unit_dir: dossiers
+checks:
+  - {id: policy, command: "python3 harness/adapter/checks/policy_scan.py --unit {unit}", severity: fatal}
+  - {id: composed_gate, command: "python3 harness/adapter/checks/composed_gate.py --unit {unit}", severity: fatal}
+  - {id: build, command: "python3 harness/adapter/checks/build.py --unit {unit}", severity: fatal}
+  - {id: package, command: "python3 harness/adapter/checks/package.py --unit {unit}", severity: fatal}
+gates:
+  - id: scope_confirmed
+    approval: {required: true, channel: tty}
+  - id: composed
+    checks: [composed_gate]
+  - id: lint_passed
+    checks: [policy]
+  - id: pdf_verified
+    checks: [build]
+  - id: packaged
+    checks: [package]
+    seals_unit: true
+# The policy of the schema-1 eval pack adapter (policies, protected_paths; same copy),
+# copied entry for entry in schema 2. The eval adapter has no blind paths.
+policy:
+  deny:
+    - {id: acct, regex: '\d{6}\s*-\s*\d{4}', scope: [any], severity: fatal,
+       summary: "no account number on disk, anywhere", enforces: no-acct}
+    - {id: tariffs,
+       regex: '\b(?:list price|net margin|discount rate)\b',
+       scope: ["dossiers/*/*.tex"], severity: fatal,
+       summary: "tariffs are internal-only", enforces: tariffs-internal}
+    - {id: notes-section, regex: '\\section\{\s*Internal Notes\s*\}',
+       scope: ["dossiers/*/main.tex"], severity: fatal,
+       summary: "no Internal Notes section in a dossier", enforces: no-notes-section}
+    - {id: scratch-section,
+       regex: '\\section\{\s*(TODO|Scratchpad|Scratch)\s*\}',
+       scope: ["dossiers/*/main.tex"], severity: fatal,
+       summary: "no scratch sections in a dossier", enforces: no-scratch-sections}
+    # Synthetic stand-ins for the runtime-derived disclosure tokens (S4 class).
+    - {id: disclosure-client, regex: '(?i)AcmeSecret',
+       scope: ["dossiers/*/*.tex"], severity: fatal,
+       summary: "confidential client name in a rendered document",
+       enforces: disclosure-protection}
+    - {id: disclosure-product, regex: '(?i)SecretProduct',
+       scope: ["dossiers/*/*.tex"], severity: fatal,
+       summary: "confidential product name in a rendered document",
+       enforces: disclosure-protection}
+    # --- advisory style layer (warn; never blocks a gate) --------------------
+    - {id: shouting, regex: '!{2,}',
+       scope: ["dossiers/*/*.tex"], severity: warn, pretool: false,
+       summary: "no repeated exclamation marks", enforces: style-anti-ai}
+    - {id: style-emdash, regex: '—|---',
+       scope: ["dossiers/*/*.tex"], severity: warn, pretool: false,
+       summary: "em-dash in a rendered document", enforces: style-anti-ai}
+    - {id: style-buzzwords,
+       regex: '\b(?:delv(?:e|ing|es)|leverag(?:e|es|ing)|robust|seamless(?:ly)?|foster(?:s|ing)?|underscor(?:e|es|ing)|tapestry|innovative)\b',
+       scope: ["dossiers/*/*.tex"], severity: warn, pretool: false,
+       summary: "AI-tell buzzword", enforces: style-anti-ai}
+    - {id: style-cliche, regex: '\bIn conclusion\b|\bfast-paced\b',
+       scope: ["dossiers/*/*.tex"], severity: warn, pretool: false,
+       summary: "cliché filler", enforces: style-anti-ai}
+    - {id: style-not-just, regex: '\bnot just\b[^.\n]{0,60}?\bbut\b',
+       scope: ["dossiers/*/*.tex"], severity: warn, pretool: false,
+       summary: "'not just X but Y' construction", enforces: style-anti-ai}
+  ask: []
+  blind: []
+  protected_paths: ["dossiers/*/manifest.yaml", "dossiers/.active"]

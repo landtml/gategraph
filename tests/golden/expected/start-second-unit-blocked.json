@@ -1,0 +1,25 @@
+{
+  "id": "start-second-unit-blocked",
+  "steps": [
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 0,
+      "next": "scope_confirmed",
+      "op": "start",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "exit": 1,
+      "i": 1,
+      "manifest": "missing",
+      "op": "start",
+      "says_unit_complete": false,
+      "unit": "u2"
+    }
+  ]
+}

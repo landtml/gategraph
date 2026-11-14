@@ -1,0 +1,3 @@
+gate: bounded
+check: data-row-counts
+rule: rows.below-min

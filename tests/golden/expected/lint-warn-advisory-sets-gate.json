@@ -1,0 +1,72 @@
+{
+  "id": "lint-warn-advisory-sets-gate",
+  "steps": [
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 0,
+      "next": "scope_confirmed",
+      "op": "start",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 1,
+      "next": "scope_confirmed",
+      "op": "write",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [
+        "scope_confirmed"
+      ],
+      "exit": 0,
+      "gate": "scope_confirmed",
+      "i": 2,
+      "next": "composed",
+      "op": "approve",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [
+        "scope_confirmed",
+        "composed"
+      ],
+      "exit": 0,
+      "gate": "composed",
+      "i": 3,
+      "next": "lint_passed",
+      "op": "tool_set",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [
+        "scope_confirmed",
+        "composed",
+        "lint_passed"
+      ],
+      "exit": 1,
+      "gate": "lint_passed",
+      "i": 4,
+      "next": "pdf_verified",
+      "op": "lint",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    }
+  ]
+}

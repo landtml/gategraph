@@ -1,0 +1,3 @@
+version: 1
+targets: [config/app.yaml
+steps:

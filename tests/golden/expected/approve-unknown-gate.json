@@ -1,0 +1,28 @@
+{
+  "id": "approve-unknown-gate",
+  "steps": [
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 0,
+      "next": "scope_confirmed",
+      "op": "start",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 1,
+      "gate": "nonsense",
+      "i": 1,
+      "next": "scope_confirmed",
+      "op": "approve",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    }
+  ]
+}

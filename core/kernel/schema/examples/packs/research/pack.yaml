@@ -1,0 +1,14 @@
+# packs/research/pack.yaml, as in plan section 1.13.
+pack: research
+version: 1
+readers:
+  - {match: ["**/*.pdf"], reader: pdf_text}
+  - {match: ["**/*.md", "**/*.txt"], reader: text}
+tools: [read_file, glob, grep, write_file, edit_file, fetch_url, web_search]
+checks:
+  - {id: claims-have-sources, cmd: "python3 {pack}/checks/claims.py {unit}", on: ["**/*.md"]}
+  - {id: sources-resolve, cmd: "python3 {pack}/checks/sources.py {unit}", on: ["sources/**"]}
+gate_presets:
+  default: [scoped, sourced, composed, verified]
+doctor:
+  advisory: [{id: pdftotext, cmd: "pdftotext -v"}]

@@ -1,0 +1,3 @@
+gate: dry_run
+check: dry-run-clean
+rule: dry_run.missing

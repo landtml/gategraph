@@ -1,0 +1,3 @@
+Synthetic fund report (a fixture, not real data).
+Net return over the period: 22.8 percent.
+Maximum drawdown over the period: 9.4 percent.

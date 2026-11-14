@@ -1,8 +1,6 @@
-# eval/, the template's reference corpus
+# eval
 
-- `corpus/*.yaml`, 44 synthetic cases (detection / machinery).
-- `pack/`, the policy pack the corpus runs against: a mini project root
-  holding `harness/adapter/adapter.yaml`.
+- `corpus/`: the frozen case corpus (do not edit).
+- `pack_v2/`: the 220 deterministic cases the new engine runs.
 
-Run `make eval` (deterministic, free). Policy, schema, split and rotation rules:
-`docs/EVAL.md`.
+Run `make eval` (deterministic, free, no model calls).

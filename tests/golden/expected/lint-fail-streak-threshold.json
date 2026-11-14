@@ -1,0 +1,82 @@
+{
+  "id": "lint-fail-streak-threshold",
+  "steps": [
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 0,
+      "next": "scope_confirmed",
+      "op": "start",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 1,
+      "next": "scope_confirmed",
+      "op": "write",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 2,
+      "i": 2,
+      "next": "scope_confirmed",
+      "op": "lint",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 2,
+      "i": 3,
+      "next": "scope_confirmed",
+      "op": "lint",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 2,
+      "i": 4,
+      "next": "scope_confirmed",
+      "op": "lint",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 5,
+      "next": "scope_confirmed",
+      "op": "edit",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 6,
+      "next": "scope_confirmed",
+      "op": "lint",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    }
+  ]
+}

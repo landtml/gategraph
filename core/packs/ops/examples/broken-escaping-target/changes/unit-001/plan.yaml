@@ -1,0 +1,5 @@
+version: 1
+targets:
+  - ../outside/app.yaml
+steps:
+  - {op: write, target: ../outside/app.yaml, content: "retries: 3\n"}

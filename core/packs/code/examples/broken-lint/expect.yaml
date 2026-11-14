@@ -1,0 +1,4 @@
+# Imports and tests pass; one line of variant.py ends in trailing whitespace.
+gate: linted
+check: lint
+rule: lint.trailing-whitespace

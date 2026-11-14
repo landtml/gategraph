@@ -1,0 +1,4 @@
+description: the only source is blank, so it cannot back any claim
+fails_at: sourced
+check: sources-resolve
+rule: sources.empty

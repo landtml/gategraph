@@ -1,0 +1,14 @@
+{
+  "id": "lint-unknown-unit",
+  "steps": [
+    {
+      "active": null,
+      "exit": 2,
+      "i": 0,
+      "manifest": "missing",
+      "op": "lint",
+      "says_unit_complete": false,
+      "unit": "ghost"
+    }
+  ]
+}

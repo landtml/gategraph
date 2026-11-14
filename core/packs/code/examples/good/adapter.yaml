@@ -1,0 +1,14 @@
+# A code-pack project: the default preset of the code pack, one gate per check.
+schema: 2
+project: code-example
+unit_noun: change
+unit_dir: changes
+packs: [code]
+gates:
+  - id: imported
+    checks: [imports]
+  - id: tested
+    checks: [unit-tests]
+  - id: linted
+    checks: [lint]
+    seals_unit: true

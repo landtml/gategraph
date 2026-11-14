@@ -1,0 +1,84 @@
+# eval policy pack, schema 2: the schema-2 form of eval/pack/harness/adapter/adapter.yaml
+# (V1). The policy regexes, scopes, severities and the gate chain are copied from the
+# schema-1 pack; every instance-shaped token is invented, as in the schema-1 pack. Gate
+# commands are kept as written there. The deterministic runner (core/eval/runner_v2.py)
+# never runs them: machinery cases replace each check command with a passing stub, and
+# detection cases do not touch checks.
+#
+# Schema 1 -> 2 mapping (core/kernel/config_v1.py): the gate-command ``--set-gate`` flag is
+# dropped (a gate passes only through the seal node); ``gate.py approve`` becomes an
+# approval; hashed gates get a whole-unit surface that excludes review.json before the
+# final gate; the final gate seals the unit.
+schema: 2
+project: evalpack
+unit_noun: dossier
+unit_dir: dossiers
+packs: []
+
+checks:
+  - {id: composed, command: "python3 harness/adapter/checks/composed_gate.py --unit {slug}", severity: fatal}
+  - {id: lint_passed, command: "python3 harness/core/lint.py --unit {slug}", severity: fatal}
+  - {id: pdf_verified, command: "python3 harness/adapter/checks/build.py --unit {slug}", severity: fatal}
+  - {id: packaged, command: "python3 harness/adapter/checks/package.py --unit {slug}", severity: fatal}
+
+gates:
+  - id: scope_confirmed
+    approval: {required: true, channel: tty}
+    surface: {include: []}
+  - id: composed
+    checks: [composed]
+    surface: {include: []}
+  - id: lint_passed
+    checks: [lint_passed]
+    surface: {include: ["**"], exclude: [review.json]}
+  - id: pdf_verified
+    checks: [pdf_verified]
+    surface: {include: ["**"], exclude: [review.json]}
+  - id: packaged
+    checks: [packaged]
+    surface: {include: ["**"]}
+    seals_unit: true
+
+policy:
+  deny:
+    - {id: acct, regex: '\d{6}\s*-\s*\d{4}', scope: [any], severity: fatal,
+       summary: "no account number on disk, anywhere", enforces: no-acct}
+    - {id: tariffs,
+       regex: '\b(?:list price|net margin|discount rate)\b',
+       scope: ["dossiers/*/*.tex"], severity: fatal,
+       summary: "tariffs are internal-only", enforces: tariffs-internal}
+    - {id: notes-section, regex: '\\section\{\s*Internal Notes\s*\}',
+       scope: ["dossiers/*/main.tex"], severity: fatal,
+       summary: "no Internal Notes section in a dossier", enforces: no-notes-section}
+    - {id: scratch-section,
+       regex: '\\section\{\s*(TODO|Scratchpad|Scratch)\s*\}',
+       scope: ["dossiers/*/main.tex"], severity: fatal,
+       summary: "no scratch sections in a dossier", enforces: no-scratch-sections}
+    # Synthetic stand-ins for the runtime-derived disclosure tokens (S4 class).
+    - {id: disclosure-client, regex: '(?i)AcmeSecret',
+       scope: ["dossiers/*/*.tex"], severity: fatal,
+       summary: "confidential client name in a rendered document",
+       enforces: disclosure-protection}
+    - {id: disclosure-product, regex: '(?i)SecretProduct',
+       scope: ["dossiers/*/*.tex"], severity: fatal,
+       summary: "confidential product name in a rendered document",
+       enforces: disclosure-protection}
+    # --- advisory style layer (warn; never blocks a gate) --------------------
+    - {id: shouting, regex: '!{2,}',
+       scope: ["dossiers/*/*.tex"], severity: warn, pretool: false,
+       summary: "no repeated exclamation marks", enforces: style-anti-ai}
+    - {id: style-emdash, regex: '—|---',
+       scope: ["dossiers/*/*.tex"], severity: warn, pretool: false,
+       summary: "em-dash in a rendered document", enforces: style-anti-ai}
+    - {id: style-buzzwords,
+       regex: '\b(?:delv(?:e|ing|es)|leverag(?:e|es|ing)|robust|seamless(?:ly)?|foster(?:s|ing)?|underscor(?:e|es|ing)|tapestry|innovative)\b',
+       scope: ["dossiers/*/*.tex"], severity: warn, pretool: false,
+       summary: "AI-tell buzzword", enforces: style-anti-ai}
+    - {id: style-cliche, regex: '\bIn conclusion\b|\bfast-paced\b',
+       scope: ["dossiers/*/*.tex"], severity: warn, pretool: false,
+       summary: "cliché filler", enforces: style-anti-ai}
+    - {id: style-not-just, regex: '\bnot just\b[^.\n]{0,60}?\bbut\b',
+       scope: ["dossiers/*/*.tex"], severity: warn, pretool: false,
+       summary: "'not just X but Y' construction", enforces: style-anti-ai}
+  ask: []
+  protected_paths: ["dossiers/*/manifest.yaml", "dossiers/.active"]

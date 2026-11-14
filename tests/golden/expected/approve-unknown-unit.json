@@ -1,0 +1,24 @@
+{
+  "id": "approve-unknown-unit",
+  "steps": [
+    {
+      "active": null,
+      "exit": 1,
+      "gate": "scope_confirmed",
+      "i": 0,
+      "manifest": "missing",
+      "op": "approve",
+      "says_unit_complete": false,
+      "unit": "ghost"
+    },
+    {
+      "active": null,
+      "exit": 1,
+      "i": 1,
+      "manifest": "missing",
+      "op": "status",
+      "says_unit_complete": false,
+      "unit": "ghost"
+    }
+  ]
+}

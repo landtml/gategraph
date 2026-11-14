@@ -1,0 +1,15 @@
+# The data pack (plan section 1.13; brief D5). A dataset unit is one CSV table
+# plus spec.json, the declared schema, row bounds, null threshold and totals.
+# Checks are stdlib-only (csv, json, decimal); the spec is JSON for that reason.
+pack: data
+version: 1
+readers:
+  - {match: ["**/*.csv"], reader: csv}
+tools: [read_file, glob, grep, write_file, edit_file, query_table, profile_table]
+checks:
+  - {id: data-schema, cmd: "python3 {pack}/checks/schema.py {unit}", on: ["**/rows.csv", "**/spec.json"]}
+  - {id: data-row-counts, cmd: "python3 {pack}/checks/row_counts.py {unit}", on: ["**/rows.csv", "**/spec.json"]}
+  - {id: data-null-rates, cmd: "python3 {pack}/checks/null_rates.py {unit}", on: ["**/rows.csv", "**/spec.json"]}
+  - {id: data-reconcile, cmd: "python3 {pack}/checks/reconcile.py {unit}", on: ["**/rows.csv", "**/spec.json"]}
+gate_presets:
+  default: [declared, bounded, reconciled]

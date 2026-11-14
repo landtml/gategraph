@@ -1,9 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python3 harness/*)",
-      "Bash(bash harness/core/tests/run_checks.sh)",
-      "Bash(make check)"
+      "Bash(make check)",
+      "Bash(make venv)"
     ]
   },
   "hooks": {
@@ -13,7 +12,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/harness/core/hooks/pretool_guard.py\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/harness/core/hosts/shims/pretool_guard.py\"",
             "timeout": 15
           }
         ]
@@ -25,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/harness/core/hooks/posttool_lint.py\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/harness/core/hosts/shims/posttool_lint.py\"",
             "timeout": 90
           }
         ]
@@ -35,7 +34,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/harness/core/hooks/posttool_lint.py\" --bash-relint",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/harness/core/hosts/shims/posttool_lint.py\" --bash-relint",
             "timeout": 90
           }
         ]
@@ -46,7 +45,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/harness/core/hooks/stop_gate.py\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/harness/core/hosts/shims/stop_gate.py\"",
             "timeout": 30
           }
         ]
@@ -57,7 +56,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR/harness/core/hooks/session_start.py\"",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/harness/core/hosts/shims/session_start.py\"",
             "timeout": 10
           }
         ]

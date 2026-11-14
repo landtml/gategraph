@@ -1,12 +1,14 @@
-"""Oracle for the {{FH_PROJECT}} autonomous loop (Layer 2).
+"""Oracle for the {{FH_PROJECT}} variant search (Layer 2).
 
-Skeleton stamped by `gatebench init` because loop.enabled was set. `run_gates` is
-the ONLY method the loop requires (the Oracle ABC in harness/core/loop/
-defaults `incumbent()` to None and `proposal_space()` to [], override them
-only if your project uses them). The loop refuses to start until run_gates
-returns real metrics for the floors declared in adapter.yaml
-loop.gates.metric_floors.
+Skeleton stamped by `gategraph init` because loop.enabled was set. `run_gates` is the only method
+the search requires. The kernel Oracle ABC in core/kernel/oracle.py defaults `incumbent()` to None
+and `proposal_space()` / `soft_passes()` to []; override them only if your project uses them.
+The search refuses to start until run_gates returns real passes for the gates declared in
+adapter.yaml loop.gates.metric_floors.
 """
+
+from core.kernel.oracle import Oracle as KernelOracle
+from core.kernel.oracle import OracleGateResult
 
 # THE CONTRACT (F3 pattern: keep enforced spec and narrated spec identical):
 # the domain and probes below are the REAL variant contract. run_gates MUST
@@ -24,13 +26,14 @@ CONTRACT = {
 }
 
 
-class Oracle:
-    """Project-specific evaluation authority for loop variants."""
+class Oracle(KernelOracle):
+    """Project-specific evaluation authority for search variants."""
 
-    def run_gates(self, variant, cfg):
-        """Evaluate one variant; return a GateResult
-        (passes, metrics, tripwires, notes).
+    def run_gates(self, variant_path, cfg) -> OracleGateResult:
+        """Evaluate one variant; return an OracleGateResult
+        (variant_id, passes, metrics, tripwires, notes).
 
+        The oracle computes every metric itself: a variant never reports its own score.
         Sample the evaluation grid from CONTRACT["domain"] and include every
         CONTRACT["boundary_probes"] point explicitly.
         """

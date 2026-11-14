@@ -1,0 +1,7 @@
+version: 1
+targets:
+  - config/app.yaml
+  - notes/status.txt
+steps:
+  - {op: write, target: config/app.yaml, content: "retries: 3\n"}
+  - {op: write, target: notes/status.txt, content: "ready\n"}

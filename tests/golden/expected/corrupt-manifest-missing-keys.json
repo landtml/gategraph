@@ -1,0 +1,44 @@
+{
+  "id": "corrupt-manifest-missing-keys",
+  "steps": [
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 0,
+      "next": "scope_confirmed",
+      "op": "start",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "exit": 0,
+      "i": 1,
+      "manifest": "error:ManifestError",
+      "op": "manifest_text",
+      "says_unit_complete": false,
+      "status": null
+    },
+    {
+      "active": "u1",
+      "exit": 1,
+      "gate": "scope_confirmed",
+      "i": 2,
+      "manifest": "error:ManifestError",
+      "op": "approve",
+      "says_unit_complete": false,
+      "status": null
+    },
+    {
+      "active": "u1",
+      "exit": 1,
+      "i": 3,
+      "manifest": "error:ManifestError",
+      "op": "pause",
+      "says_unit_complete": false,
+      "status": null
+    }
+  ]
+}

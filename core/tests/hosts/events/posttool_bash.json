@@ -1,0 +1,17 @@
+{
+  "session_id": "sample-session-01",
+  "transcript_path": "/work/sample-repo/.claude/transcripts/sample-session-01.jsonl",
+  "cwd": "/work/sample-repo",
+  "permission_mode": "default",
+  "hook_event_name": "PostToolUse",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "python3 -m unittest",
+    "description": "Run the test suite"
+  },
+  "tool_response": {
+    "stdout": "OK",
+    "stderr": "",
+    "interrupted": false
+  }
+}

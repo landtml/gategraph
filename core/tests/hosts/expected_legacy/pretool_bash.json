@@ -1,0 +1,8 @@
+{
+  "event": "pretool_bash.json",
+  "hook": "pretool_guard.py",
+  "args": [],
+  "stdout": "",
+  "stderr": "",
+  "exit": 0
+}

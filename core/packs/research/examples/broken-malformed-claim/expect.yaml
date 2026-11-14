@@ -1,0 +1,4 @@
+description: a decimal comma turns a claim line into one that does not parse
+fails_at: composed
+check: claims-have-sources
+rule: claims.malformed

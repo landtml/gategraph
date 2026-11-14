@@ -1,0 +1,10 @@
+# Smallest valid adapter: one gate, one check.
+schema: 2
+project: minimal-example
+unit_noun: note
+unit_dir: notes
+checks:
+  - {id: lint, command: "python3 harness/adapter/checks/lint.py --unit {unit}", severity: fatal}
+gates:
+  - id: composed
+    checks: [lint]

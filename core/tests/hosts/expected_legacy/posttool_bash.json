@@ -1,0 +1,10 @@
+{
+  "event": "posttool_bash.json",
+  "hook": "posttool_lint.py",
+  "args": [
+    "--bash-relint"
+  ],
+  "stdout": "",
+  "stderr": "",
+  "exit": 0
+}

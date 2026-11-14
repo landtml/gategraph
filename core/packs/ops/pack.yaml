@@ -1,0 +1,15 @@
+# The ops reference pack (plan section 1.13; brief D6). A plan file, checked against
+# its declared targets; a dry run whose log must show no error; and an apply tool
+# that is irreversible, so it needs approval and is not idempotent (tool.py).
+# The final gate of the default preset is a human approval (the adapter declares it).
+pack: ops
+version: 1
+tools: [read_file, glob, grep, write_file, edit_file, apply_plan]
+checks:
+  - {id: plan-parses, cmd: "python3 {pack}/checks/check_plan.py {unit}", on: ["**/plan.yaml"]}
+  - {id: plan-targets, cmd: "python3 {pack}/checks/check_targets.py {unit}", on: ["**/plan.yaml"]}
+  - {id: dry-run-clean, cmd: "python3 {pack}/checks/check_dry_run.py {unit}", on: ["**/dry_run.log"]}
+gate_presets:
+  default: [planned, dry_run, approved]
+doctor:
+  advisory: [{id: pyyaml, cmd: "python3 -c 'import yaml'"}]

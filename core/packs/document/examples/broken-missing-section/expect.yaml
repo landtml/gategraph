@@ -1,0 +1,4 @@
+# The unit the external actor must refuse, and why.
+gate: scoped
+check: required-sections
+rule: document.section_missing

@@ -1,0 +1,17 @@
+# The code pack (plan section 1.13): a change to a repository. The unit is a
+# directory holding variant.py (the single file the maker authors, moved here
+# from core/loop/gateway.py VARIANT_FILE) and its tests. Checks are stdlib-only
+# and follow the check exit-code contract (0 pass, 1 fatal).
+pack: code
+version: 1
+readers:
+  - {match: ["**/*.py"], reader: text}
+tools: [read_file, glob, grep, write_file, edit_file, run_command]
+checks:
+  - {id: imports, cmd: "python3 {pack}/checks/imports.py {unit}", on: ["**/*.py"]}
+  - {id: unit-tests, cmd: "python3 {pack}/checks/run_tests.py {unit}", on: ["**/*.py"]}
+  - {id: lint, cmd: "python3 {pack}/checks/lint.py {unit}", on: ["**/*.py"]}
+gate_presets:
+  default: [imported, tested, linted]
+doctor:
+  advisory: [{id: mypy, cmd: "python3 -m mypy --version"}]

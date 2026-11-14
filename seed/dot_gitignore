@@ -1,3 +1,5 @@
+.gategraph/
+.venv/
 harness/state/
 harness/logs/
 __pycache__/

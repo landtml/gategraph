@@ -1,0 +1,15 @@
+# The document pack: one Markdown document checked for its sections, its
+# placeholder text, its length and its render. Gates are named by the adapter;
+# the default preset names the three that examples/adapter.yaml defines.
+pack: document
+version: 1
+readers:
+  - {match: ["**/*.md"], reader: text}
+tools: [read_file, glob, grep, write_file, edit_file, render_document]
+checks:
+  - {id: required-sections, cmd: "python3 {pack}/checks/required_sections.py {unit}", on: ["**/*.md"]}
+  - {id: no-placeholders, cmd: "python3 {pack}/checks/placeholders.py {unit}", on: ["**/*.md"]}
+  - {id: page-count, cmd: "python3 {pack}/checks/page_count.py {unit}", on: ["**/*.md"]}
+  - {id: render, cmd: "python3 {pack}/checks/render.py {unit}", on: ["**/*.md"]}
+gate_presets:
+  default: [scoped, composed, packaged]

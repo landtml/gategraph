@@ -1,0 +1,4 @@
+# variant.py imports, but clamp does not lower values above high: a unit test fails.
+gate: tested
+check: unit-tests
+rule: tests.failed

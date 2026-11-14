@@ -1,0 +1,18 @@
+{
+  "mach-escalate-terminal": {
+    "pass": true,
+    "scenario": "escalate_is_terminal"
+  },
+  "mach-out-of-order-refused": {
+    "pass": true,
+    "scenario": "out_of_order_refused"
+  },
+  "mach-reset-invalidates-later": {
+    "pass": true,
+    "scenario": "reset_invalidates_later"
+  },
+  "mach-staleness-reopens": {
+    "pass": true,
+    "scenario": "staleness_reopens"
+  }
+}

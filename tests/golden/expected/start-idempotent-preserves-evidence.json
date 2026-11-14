@@ -1,0 +1,43 @@
+{
+  "id": "start-idempotent-preserves-evidence",
+  "steps": [
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 0,
+      "next": "scope_confirmed",
+      "op": "start",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [
+        "scope_confirmed"
+      ],
+      "exit": 0,
+      "gate": "scope_confirmed",
+      "i": 1,
+      "next": "composed",
+      "op": "approve",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [
+        "scope_confirmed"
+      ],
+      "exit": 0,
+      "i": 2,
+      "next": "composed",
+      "op": "start",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    }
+  ]
+}

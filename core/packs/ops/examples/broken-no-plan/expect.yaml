@@ -1,0 +1,3 @@
+gate: planned
+check: plan-parses
+rule: plan.missing

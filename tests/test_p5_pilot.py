@@ -1,17 +1,19 @@
-"""P5 exit tests: the pilot "consumer-A" (plan §17 P5).
+"""P5 exit tests: the pilot "consumer-A" (plan §17 P5), on the schema-2 layout.
 
 A stranger project stamped from the template must:
-  - walk composed -> linted -> reviewed end-to-end with ZERO hand-edits to
-    harness/core (the `reviewed` gate is earned from a schema-valid,
-    sha256-anchored review.json per §11, wired entirely in the adapter layer);
-  - run a bounded 10-iteration --mock-workers loop after flipping loop.enabled
-    to the shipped toy oracle;
-  - survive the gatebench update sync path under local core drift (§15 Risk 3):
-    a template release must never clobber a local hotfix (.fhnew + report),
-    core-drift lint must nag, and gatebench upstream must close the loop.
+  - walk composed -> linted -> reviewed end-to-end with ZERO hand-edits to harness/core.
+    `composed` is an approval gate on the token channel (a person answers it with the one-time
+    token). `linted` is a check gate (policy scan). `reviewed` is earned by `gate attempt`
+    running two checks: the policy scan and review_gate.py, which accepts only a fresh,
+    sha256-anchored review.json with verdict `pass`;
+  - run a bounded 10-iteration toy search (the search CLI that the loop shim maps to);
+  - survive the gategraph update sync path under local core drift (§15 Risk 3): a template
+    release must never clobber a local hotfix (.fhnew + report), `gategraph diff` must name the
+    drifted file, and `gategraph upstream` must close the loop.
 
-The pilot's project-side layer lives in tests/pilot/ (cross_review.py,
-review_gate.py, wire.py); the same assets stamp the real pilot project.
+The pilot's project-side layer lives in tests/pilot/ (cross_review.py, review_gate.py, wire.py).
+A gate passes only through `gate attempt` (checks) or `gate proceed --token` (approvals); a direct
+set is refused (bug B01).
 """
 import json
 import os
@@ -26,20 +28,23 @@ from pathlib import Path
 import yaml
 
 from test_fh_init import run_init
+from test_stamp_v2 import require_template_venv, seed_venv
 
 TEMPLATE = Path(__file__).resolve().parent.parent
 PILOT = Path(__file__).resolve().parent / "pilot"
+UNIT = "w1"
+PROJECT = "consumer-A"
+ACCT_TOKEN = "010190" + "-1234"  # assembled so this file never stores a literal
 
 ANSWERS = {
-    "project": "consumer-A",
+    "project": PROJECT,
     "artifact_noun": "note",
     "unit_dir": "notes",
     "gates": ["composed", "linted", "reviewed"],
-    "hashed_gates": ["linted", "reviewed"],   # both tool-set + staleness-tracked
-    "seed_deny": True,                        # the one deny-regex (no-acct)
-    "loop_enabled": False,                    # flipped later by the project
+    "approval_gates": ["composed"],        # a person answers this gate with the token
+    "approval_channel": "token",
+    "seed_deny": True,                    # the one deny-regex (no-acct)
 }
-ACCT_TOKEN = "010190" + "-1234"  # assembled so this file never stores a literal
 
 GOOD_NOTE = """# w1: Weekly note: harness pilot
 
@@ -49,7 +54,7 @@ GOOD_NOTE = """# w1: Weekly note: harness pilot
 
 ## Sources
 - source: harness/core/PROTOCOL.md
-- source: plan.md §17 (P5 row)
+- source: harness/adapter/adapter.yaml
 """
 
 BAD_NOTE = """# w2: stub
@@ -57,10 +62,19 @@ BAD_NOTE = """# w2: stub
 TODO: actually write this note
 """
 
+TOKEN_PREFIX = "approval token (shown once, not stored): "
+
 
 def wire_pilot(root: Path) -> subprocess.CompletedProcess:
     return subprocess.run([sys.executable, str(PILOT / "wire.py"), str(root)],
                           capture_output=True, text=True)
+
+
+def token_in(text: str) -> str:
+    for line in text.splitlines():
+        if line.strip().startswith(TOKEN_PREFIX.strip()):
+            return line.split(":", 1)[1].strip()
+    raise AssertionError(f"no approval token printed:\n{text}")
 
 
 class TestCrossReviewScript(unittest.TestCase):
@@ -110,19 +124,21 @@ class TestCrossReviewScript(unittest.TestCase):
 
 
 class TestPilotLifecycle(unittest.TestCase):
-    """consumer-A stamped from the REAL template, wired project-side, then
-    driven through the full interactive lifecycle + the bounded loop."""
+    """consumer-A stamped from the REAL template, wired project-side, then driven through the
+    gate lifecycle and the bounded search."""
 
     @classmethod
     def setUpClass(cls):
+        require_template_venv()
         cls.tmp = tempfile.TemporaryDirectory()
-        cls.root = Path(cls.tmp.name) / "consumer-A"
+        cls.root = Path(cls.tmp.name) / PROJECT
         proc = run_init(cls.root, answers=ANSWERS)
         if proc.returncode != 0:
             raise RuntimeError(f"init failed:\n{proc.stdout}\n{proc.stderr}")
         wired = wire_pilot(cls.root)
         if wired.returncode != 0:
             raise RuntimeError(f"wire failed:\n{wired.stdout}\n{wired.stderr}")
+        cls.py = seed_venv(cls.root)
 
     @classmethod
     def tearDownClass(cls):
@@ -130,25 +146,25 @@ class TestPilotLifecycle(unittest.TestCase):
 
     # ---------------------------------------------------------------- helpers
 
-    def cli(self, script, *args):
-        return subprocess.run(
-            [sys.executable, str(self.root / "harness/core" / script), *args,
-             "--root", str(self.root)],
-            capture_output=True, text=True)
+    def gate(self, *args):
+        return subprocess.run([str(self.py), "harness/core/cli/gate.py", *args],
+                              cwd=self.root, capture_output=True, text=True)
 
     def check_script(self, script, *args):
-        return subprocess.run(
-            [sys.executable, str(self.root / "harness/adapter/checks" / script),
-             *args, "--root", str(self.root)],
-            capture_output=True, text=True)
+        return subprocess.run([str(self.py), f"harness/adapter/checks/{script}", *args],
+                              cwd=self.root, capture_output=True, text=True)
+
+    def legacy(self, script, *args):
+        return subprocess.run([sys.executable, str(self.root / "harness/core" / script), *args],
+                              cwd=self.root, capture_output=True, text=True)
 
     def hook(self, script, event):
         env = {**os.environ, "CLAUDE_PROJECT_DIR": str(self.root)}
         return subprocess.run(
-            [sys.executable, str(self.root / "harness/core/hooks" / script)],
+            [sys.executable, str(self.root / "harness/core/hosts/shims" / script)],
             input=json.dumps(event), capture_output=True, text=True, env=env)
 
-    def cross_review(self, slug="w1"):
+    def cross_review(self, slug=UNIT):
         return subprocess.run(
             [sys.executable, str(self.root / "harness/adapter/checks/cross_review.py"),
              "--artifact", str(self.root / f"notes/{slug}/note.md"),
@@ -156,110 +172,197 @@ class TestPilotLifecycle(unittest.TestCase):
              "--out", str(self.root / f"notes/{slug}/review.json")],
             capture_output=True, text=True)
 
-    def manifest(self, slug="w1"):
-        return yaml.safe_load((self.root / f"notes/{slug}/manifest.yaml").read_text())
+    def manifest_text(self, slug=UNIT):
+        return (self.root / f"notes/{slug}/manifest.yaml").read_text()
+
+    def status(self, slug=UNIT):
+        return self.gate("status", "--unit", slug).stdout
+
+    def walk_composed(self, slug=UNIT):
+        """`composed` is an approval: raise it with `attempt`, answer it with the token."""
+        raised = self.gate("attempt", "composed", "--unit", slug)
+        self.assertEqual(raised.returncode, 0, raised.stdout + raised.stderr)
+        tok = token_in(raised.stdout)
+        answered = self.gate("proceed", "--unit", slug, "--decision", "approve",
+                             "--by", "tester", f"--token={tok}")
+        self.assertEqual(answered.returncode, 0, answered.stdout + answered.stderr)
+        return tok
 
     # ---------------------------------------------------------------- tests
 
     def test_01_wired_project_is_gating_clean(self):
-        # wiring added a check with `enforces: reviewed-evidence` + the CLAUDE.md
-        # annotation; rule-coverage (gating) must hold in both directions
-        r = subprocess.run(
-            [sys.executable, "harness/core/harness_lint.py", "--tier", "gating"],
-            cwd=self.root, capture_output=True, text=True)
+        # the review check and the reviewed gate are in the adapter; selflint (gating) is clean
+        r = subprocess.run([str(self.py), "-m", "core.kernel.selflint", "--tier", "gating",
+                            "--root", "."],
+                           cwd=self.root, capture_output=True, text=True,
+                           env={**os.environ, "PYTHONPATH": "harness"})
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        adapter = yaml.safe_load(
-            (self.root / "harness/adapter/adapter.yaml").read_text())
-        self.assertTrue(adapter["reviewer"]["cross_model"]["enabled"])
-        self.assertIn("reviewed", adapter["workflow"]["tool_set_gates"])
-        self.assertIn("review_gate.py",
-                      adapter["workflow"]["gate_commands"]["reviewed"])
+        adapter = yaml.safe_load((self.root / "harness/adapter/adapter.yaml").read_text())
+        self.assertEqual(adapter["schema"], 2)
+        self.assertNotIn("workflow", adapter, "schema 2 has no workflow block")
+        reviewed = next(g for g in adapter["gates"] if g["id"] == "reviewed")
+        self.assertEqual(reviewed["checks"], ["policy", "review"])
+        review = next(c for c in adapter["checks"] if c["id"] == "review")
+        self.assertIn("review_gate.py", review["command"])
+        self.assertEqual(review["severity"], "fatal")
+        self.assertTrue((self.root / "harness/adapter/checks/cross_review.py").is_file())
+
+        # wiring is idempotent: a second run leaves a single review check
+        self.assertEqual(wire_pilot(self.root).returncode, 0)
+        adapter = yaml.safe_load((self.root / "harness/adapter/adapter.yaml").read_text())
+        self.assertEqual([c["id"] for c in adapter["checks"]].count("review"), 1)
 
     def test_02_start_deny_and_composed(self):
-        r = self.cli("gate.py", "start", "--unit", "w1", "--session-id", "P5")
-        self.assertEqual(r.returncode, 0, r.stderr)
+        r = self.gate("start", "--unit", UNIT, "--session-id", "P5")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn(f"gate attempt composed --unit {UNIT}", self.gate(
+            "pending", "--unit", UNIT).stdout)
+
+        # a unit waiting at its work request is in_progress: the stop holds the armed session on
+        # the stale handoff and on the unit, and the reason names the gate command (plan 1.16)
+        block = json.loads(self.hook("stop_gate.py", {"session_id": "P5",
+                                                      "hook_event_name": "Stop"}).stdout)
+        self.assertEqual(block["decision"], "block")
+        self.assertIn("handoff", block["reason"].lower())
+        self.assertIn(f"gate attempt composed --unit {UNIT}", block["reason"])
 
         # the one deny-regex: pretool guard blocks ACCT content into the unit
         ev = {"session_id": "P5", "hook_event_name": "PreToolUse",
               "tool_name": "Write",
-              "tool_input": {"file_path": str(self.root / "notes/w1/note.md"),
+              "tool_input": {"file_path": str(self.root / f"notes/{UNIT}/note.md"),
                              "content": "id " + ACCT_TOKEN + "\n"}}
         out = json.loads(self.hook("pretool_guard.py", ev).stdout)
         self.assertEqual(out["hookSpecificOutput"]["permissionDecision"], "deny")
 
-        (self.root / "notes/w1/note.md").write_text(GOOD_NOTE)
-        r = self.cli("gate.py", "approve", "composed", "--unit", "w1")
-        self.assertEqual(r.returncode, 0, r.stderr)
+        (self.root / f"notes/{UNIT}/note.md").write_text(GOOD_NOTE)
+        raised = self.gate("attempt", "composed", "--unit", UNIT)
+        self.assertEqual(raised.returncode, 0, raised.stderr)
+        tok = token_in(raised.stdout)
 
-    def test_03_linted_is_tool_set(self):
-        r = self.cli("gate.py", "approve", "linted", "--unit", "w1")
-        self.assertEqual(r.returncode, 1, "tool-set gate must refuse manual approve")
-        r = self.cli("lint.py", "--unit", "w1", "--set-gate", "linted")
+        # a unit waiting at its approval is paused (plan 1.16): with a current handoff the stop is
+        # allowed. The original handoff is put back with its mtime, so the stale-handoff stop checks
+        # of test_04 and test_06 still hold.
+        handoff = self.root / "HANDOFF.md"
+        original, before = handoff.read_bytes(), handoff.stat()
+        time.sleep(0.02)
+        handoff.write_text("# HANDOFF\n\n## Now\nw1 waits at its approval\n\n## Next\nanswer it\n")
+        r = self.hook("stop_gate.py", {"session_id": "P5", "hook_event_name": "Stop"})
+        self.assertEqual(r.stdout.strip(), "", "a unit waiting for an approval must not hold stop")
+        handoff.write_bytes(original)
+        os.utime(handoff, ns=(before.st_atime_ns, before.st_mtime_ns))
+
+        # the approval has no bypass: no token, and a wrong token, are both refused
+        r = self.gate("proceed", "--unit", UNIT, "--decision", "approve", "--by", "tester")
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("token", r.stderr)
+        r = self.gate("proceed", "--unit", UNIT, "--decision", "approve", "--by", "tester",
+                      "--token=0000")
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("token", r.stderr)
+
+        r = self.gate("proceed", "--unit", UNIT, "--decision", "approve", "--by", "tester",
+                      f"--token={tok}")
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("gates passed: composed", self.status())
+
+    def test_03_linted_is_checked_and_a_direct_set_is_refused(self):
+        # B01: a gate passes only through its checks or an approval. A direct set is refused:
+        # the legacy entry points refuse a schema-2 project, no verb takes a gate name, a
+        # refused proceed changes nothing, and the manifest carries no sha256 map.
+        r = self.legacy("gate.py", "approve", "linted", "--unit", UNIT)
+        self.assertNotEqual(r.returncode, 0, "legacy approve must be refused (B01)")
+        r = self.legacy("lint.py", "--unit", UNIT, "--set-gate", "linted")
+        self.assertNotEqual(r.returncode, 0, "legacy --set-gate must be refused (B01)")
+        r = self.gate("approve", "linted", "--unit", UNIT)
+        self.assertEqual(r.returncode, 2, "gate CLI has no approve verb (B01)")
+        r = self.gate("proceed", "--unit", UNIT, "--decision", "approve", "--by", "tester",
+                      "--token=0000")
+        self.assertEqual(r.returncode, 1, "linted waits for work, not an approval (B01)")
+        self.assertNotIn("linted", self.status().split("gates passed:")[1].split("\n")[0])
+        self.assertNotIn("sha256", self.manifest_text(), "no set may write a hash map (B01)")
+
+        # the earned path: the policy check runs under `gate attempt`
+        r = self.gate("attempt", "linted", "--unit", UNIT)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("gates passed: composed, linted", self.status())
 
     def test_04_reviewed_gate_is_a_hard_wall(self):
-        # manual approve refused (tool-set)
-        r = self.cli("gate.py", "approve", "reviewed", "--unit", "w1")
-        self.assertEqual(r.returncode, 1)
+        # no review.json yet: the attempt fails its review check, exits 1 with the finding, and the
+        # gate stays open with its work request re-issued
+        r = self.gate("attempt", "reviewed", "--unit", UNIT)
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("cross_review", r.stdout)
+        self.assertIn(f"next: gate attempt reviewed --unit {UNIT}", r.stdout)
+        status = self.status()
+        self.assertIn("gates passed: composed, linted", status)
+        self.assertIn("waiting at work for gate reviewed", status)
+        self.assertNotIn("reviewed", status.split("gates passed:")[1].split("\n")[0])
+        block = json.loads(self.hook("stop_gate.py", {"session_id": "P5",
+                                                      "hook_event_name": "Stop"}).stdout)
+        self.assertIn(f"gate attempt reviewed --unit {UNIT}", block["reason"])
 
-        # no review.json yet -> the producing check refuses, names the reviewer
-        r = self.check_script("review_gate.py", "--unit", "w1")
+        # the check itself names the reviewer when there is no review
+        r = self.check_script("review_gate.py", "--unit", UNIT)
         self.assertEqual(r.returncode, 1, "must refuse without review.json")
         self.assertIn("cross_review", r.stdout + r.stderr)
-        self.assertNotIn("reviewed", self.manifest().get("gates", {}))
 
         # a fail-verdict review must NOT earn the gate
-        review_path = self.root / "notes/w1/review.json"
-        good_review = None
-        r = self.cross_review()
-        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        review_path = self.root / f"notes/{UNIT}/review.json"
+        self.assertEqual(self.cross_review().returncode, 0)
         good_review = review_path.read_text()
         bad = json.loads(good_review)
         bad["verdict"] = "fail"
         review_path.write_text(json.dumps(bad))
-        r = self.check_script("review_gate.py", "--unit", "w1")
-        self.assertEqual(r.returncode, 1, "fail verdict must not set the gate")
+        r = self.check_script("review_gate.py", "--unit", UNIT)
+        self.assertEqual(r.returncode, 1, "fail verdict must not pass the check")
 
         # a tampered sha must NOT earn the gate
         bad = json.loads(good_review)
         bad["artifact_sha256"] = "0" * 64
         review_path.write_text(json.dumps(bad))
-        r = self.check_script("review_gate.py", "--unit", "w1")
-        self.assertEqual(r.returncode, 1, "sha mismatch must not set the gate")
+        r = self.check_script("review_gate.py", "--unit", UNIT)
+        self.assertEqual(r.returncode, 1, "sha mismatch must not pass the check")
 
-        # the genuine pass verdict earns it, with sha256 evidence recorded
+        # the genuine pass verdict passes the check; the gate is still earned only by attempt
         review_path.write_text(good_review)
-        r = self.check_script("review_gate.py", "--unit", "w1")
+        r = self.check_script("review_gate.py", "--unit", UNIT)
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        gates = self.manifest()["gates"]
-        self.assertIn("reviewed", gates)
-        self.assertIn("note.md", gates["reviewed"]["sha256"])
+        self.assertIn("waiting at work for gate reviewed", self.status())
 
     def test_05_editing_the_note_reopens_review(self):
-        note = self.root / "notes/w1/note.md"
+        note = self.root / f"notes/{UNIT}/note.md"
         note.write_text(GOOD_NOTE + "\n- late addition after review\n")
 
-        r = self.cli("gate.py", "status", "--unit", "w1")
-        self.assertIn("STALE", r.stdout)
+        # the review no longer matches the note: the check refuses, and verify sees the change
+        r = self.check_script("review_gate.py", "--unit", UNIT)
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("artifact changed", r.stdout + r.stderr)
+        r = self.gate("verify", "--unit", UNIT)
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertIn("stale", r.stdout)
 
-        # defense in depth: any lint scan now fails the review-fresh check
-        r = self.cli("lint.py", "--unit", "w1")
-        self.assertEqual(r.returncode, 2, r.stdout + r.stderr)
-        self.assertIn("review-fresh", r.stdout + r.stderr)
+        # attempting the reviewed gate on the stale review fails and reopens the chain: the
+        # earlier gates went stale with the note, so the unit waits at `composed` again
+        r = self.gate("attempt", "reviewed", "--unit", UNIT)
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("artifact changed", r.stdout)
+        status = self.status()
+        self.assertIn("stale: composed, linted", status)
+        self.assertIn("waiting at work for gate composed", status)
 
-        # re-earn in order: fresh review -> linted -> reviewed
+        # re-earn in order: approval (fresh token), linted, a fresh review, reviewed
+        self.walk_composed()
+        self.assertEqual(self.gate("attempt", "linted", "--unit", UNIT).returncode, 0)
         self.assertEqual(self.cross_review().returncode, 0)
-        r = self.cli("lint.py", "--unit", "w1", "--set-gate", "linted")
+        r = self.gate("attempt", "reviewed", "--unit", UNIT)
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        r = self.check_script("review_gate.py", "--unit", "w1")
-        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        r = self.cli("gate.py", "status", "--unit", "w1")
-        self.assertNotIn("STALE", r.stdout)
-        self.assertIn("complete", r.stdout)
+        status = self.status()
+        self.assertIn("complete", status)
+        self.assertIn("gates passed: composed, linted, reviewed", status)
+        self.assertEqual(self.gate("verify", "--unit", UNIT).returncode, 0)
 
     def test_06_stop_gate_demands_handoff_then_releases(self):
-        r = self.hook("stop_gate.py", {"session_id": "P5",
-                                       "hook_event_name": "Stop"})
+        r = self.hook("stop_gate.py", {"session_id": "P5", "hook_event_name": "Stop"})
         block = json.loads(r.stdout)
         self.assertEqual(block["decision"], "block")
         self.assertIn("handoff", block["reason"].lower())
@@ -267,83 +370,83 @@ class TestPilotLifecycle(unittest.TestCase):
         time.sleep(0.02)  # handoff mtime must beat the session marker's
         (self.root / "HANDOFF.md").write_text(
             "# HANDOFF\n\n## Now\nw1 reviewed and complete\n\n## Next\nstart w2\n")
-        r = self.hook("stop_gate.py", {"session_id": "P5",
-                                       "hook_event_name": "Stop"})
+        r = self.hook("stop_gate.py", {"session_id": "P5", "hook_event_name": "Stop"})
         self.assertEqual(r.stdout.strip(), "", "consolidated unit must release stop")
 
-    def test_07_bounded_loop_with_shipped_toy_oracle(self):
-        adapter_path = self.root / "harness/adapter/adapter.yaml"
-        adapter = yaml.safe_load(adapter_path.read_text())
-        adapter["loop"]["enabled"] = True
-        adapter["loop"]["oracle"] = "core.loop.toy_oracle:ToyOracle"
-        adapter["loop"]["backstops"]["max_iterations"] = 10
-        adapter["loop"]["backstops"]["cost_budget_usd"] = 1.0
-        adapter_path.write_text(yaml.safe_dump(adapter, sort_keys=False))
-
-        cli = self.root / "harness/core/loop/cli.py"
-        r = subprocess.run([sys.executable, str(cli), "validate"],
+    def test_07_bounded_search_with_shipped_toy_oracle(self):
+        # The toy search runs through the search CLI (the engine behind the loop shim). Schema 2
+        # has no loop block, so the budget comes from flags, not from adapter.yaml.
+        search = self.root / "harness/core/cli/search.py"
+        r = subprocess.run([str(self.py), str(search), "run", "--root", str(self.root),
+                            "--project", PROJECT, "--oracle", "core.kernel.toy_oracle:ToyOracle",
+                            "--max-iterations", "10", "--max-usd", "1.0", "--mock"],
                            cwd=self.root, capture_output=True, text=True)
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("iteration budget 10 reached", r.stdout)
 
-        r = subprocess.run([sys.executable, str(cli), "run", "--mock-workers"],
-                           cwd=self.root, capture_output=True, text=True)
-        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-
-        # registry.jsonl is an append-only EVENT log: each iteration records a
-        # `proposal` card and a `verdict` card (kind-tagged lines)
-        registry = self.root / "harness/state/loop/registry.jsonl"
-        events = [json.loads(l) for l in
-                  registry.read_text().splitlines() if l.strip()]
+        # registry.jsonl is an append-only EVENT log: each iteration records a `proposal` card
+        # and a `verdict` card (kind-tagged lines)
+        registry = self.root / f".gategraph/search/{PROJECT}/registry.jsonl"
+        events = [json.loads(l) for l in registry.read_text().splitlines() if l.strip()]
         proposals = [e for e in events if e.get("kind") == "proposal"]
         verdicts = [e for e in events if e.get("kind") == "verdict"]
         self.assertEqual(len(proposals), 10, "backstop must bound the run at 10")
         self.assertEqual(len(verdicts), 10, "every iteration must reach a verdict")
         kinds = {v["verdict"] for v in verdicts}
-        self.assertEqual(kinds, {"GRADUATE"},
-                         f"toy oracle default is all-pass: {kinds}")
-        self.assertTrue((self.root / "harness/state/loop/STATUS.md").exists())
-        self.assertFalse((self.root / "harness/state/loop/loop.pid").exists(),
-                         "pidfile must be released after a clean run")
+        self.assertEqual(kinds, {"GRADUATE"}, f"toy oracle default is all-pass: {kinds}")
+        self.assertTrue((self.root / f".gategraph/search/{PROJECT}/STATUS.md").exists())
+        # the search's lock files are released after a clean run: each one is emptied on exit
+        for lock in (self.root / ".gategraph/locks").glob("*.lock"):
+            self.assertEqual(lock.read_text(), "",
+                             f"lock must be released after a clean run: {lock.name}")
+
+        # the loop shim: `validate` is a no-op while the loop is absent (disabled), and `run`
+        # refuses, because a schema-2 adapter cannot turn the loop on
+        shim = self.root / "harness/core/loop/cli.py"
+        r = subprocess.run([sys.executable, str(shim), "validate"], cwd=self.root,
+                           capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("disabled", r.stdout)
+        r = subprocess.run([sys.executable, str(shim), "run", "--mock-workers"], cwd=self.root,
+                           capture_output=True, text=True)
+        self.assertEqual(r.returncode, 2, r.stdout + r.stderr)
+        self.assertIn("REFUSING", r.stderr)
 
     def test_08_zero_hand_edits_to_core_and_check_green(self):
-        # THE §17 exit criterion, in checkable form: after the entire lifecycle
-        # and the loop, the stamped core is bit-identical to the template
-        r = subprocess.run(
-            [sys.executable, str(TEMPLATE / "gatebench.py"), "diff", str(self.root)],
-            capture_output=True, text=True)
-        self.assertEqual(r.returncode, 0,
-                         f"core drifted during the pilot:\n{r.stdout}{r.stderr}")
+        # THE §17 exit criterion, in checkable form: after the entire lifecycle and the search,
+        # the stamped core is bit-identical to the template
+        r = subprocess.run([sys.executable, str(TEMPLATE / "gategraph.py"), "diff", str(self.root)],
+                           capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, f"core drifted during the pilot:\n{r.stdout}{r.stderr}")
         self.assertIn("pristine", r.stdout)
 
-        # the §11 "done" chain still holds with the loop enabled
-        r = subprocess.run(
-            [sys.executable, "harness/core/harness_lint.py", "--tier", "gating"],
-            cwd=self.root, capture_output=True, text=True)
-        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        r = subprocess.run(
-            [sys.executable, "harness/core/loop/cli.py", "validate"],
-            cwd=self.root, capture_output=True, text=True)
+        # the project's own gating self-lint is still green with the search state written
+        r = subprocess.run([str(self.py), "-m", "core.kernel.selflint", "--tier", "gating",
+                            "--root", "."], cwd=self.root, capture_output=True, text=True,
+                           env={**os.environ, "PYTHONPATH": "harness"})
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
 
 
 class TestPilotSyncStress(unittest.TestCase):
     """§15 Risk 3 on the pilot itself: template release + local core hotfix.
-    Runs against a scratch COPY of the template (gatebench upstream writes into the
-    template); the real template repo is never touched."""
+    Runs against a scratch COPY of the template (gategraph upstream writes into the template);
+    the real template repo is never touched."""
+
+    HOTFIX_REL = "harness/core/cli/gate.py"
 
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
         base = Path(self._tmp.name)
         self.template = base / "template"
         self.template.mkdir()
-        for item in ("gatebench.py", "VERSION", "core", "seed"):
+        for item in ("gategraph.py", "VERSION", "core", "seed"):
             src = TEMPLATE / item
             if src.is_dir():
                 shutil.copytree(src, self.template / item,
                                 ignore=shutil.ignore_patterns("__pycache__"))
             else:
                 shutil.copy2(src, self.template / item)
-        self.project = base / "consumer-A"
+        self.project = base / PROJECT
         answers = base / "answers.yaml"
         answers.write_text(yaml.safe_dump(ANSWERS))
         r = self.fh("init", str(self.project), "--answers", str(answers))
@@ -354,24 +457,22 @@ class TestPilotSyncStress(unittest.TestCase):
 
     def fh(self, *args):
         return subprocess.run(
-            [sys.executable, str(self.template / "gatebench.py"), *args],
+            [sys.executable, str(self.template / "gategraph.py"), *args],
             capture_output=True, text=True)
 
-    def lint_machine(self, tier="warning"):
-        r = subprocess.run(
-            [sys.executable, "harness/core/harness_lint.py",
-             "--tier", tier, "--machine"],
-            cwd=self.project, capture_output=True, text=True)
-        return r.stdout
+    def drift_report(self):
+        """`gategraph diff` on the project: its exit code and report (the drift nag)."""
+        r = self.fh("diff", str(self.project))
+        return r.returncode, r.stdout + r.stderr
 
     def release_and_hotfix(self):
         """Template ships a release while the project carries a core hotfix."""
-        hotfix = self.project / "harness/core/gate.py"
+        hotfix = self.project / self.HOTFIX_REL
         hotfix.write_text(hotfix.read_text()
                           + "\n# PILOT HOTFIX: battle-tested in consumer-A\n")
         proto = self.template / "core/PROTOCOL.md"
         proto.write_text(proto.read_text() + "\n## Release note\n\nUpstream.\n")
-        (self.template / "VERSION").write_text("0.2.0-test\n")
+        (self.template / "VERSION").write_text("9.0.0-test\n")
         return hotfix
 
     def test_update_delivers_release_but_never_clobbers_hotfix(self):
@@ -391,35 +492,31 @@ class TestPilotSyncStress(unittest.TestCase):
         self.assertIn("DRIFT", r.stdout)
         manifest = json.loads(
             (self.project / "harness/.fh/MANIFEST.json").read_text())
-        self.assertEqual(manifest["version"], "0.2.0-test")
+        self.assertEqual(manifest["version"], "9.0.0-test")
 
-        # core-drift lint nags about exactly the hotfixed file
-        out = self.lint_machine()
-        drift = [l for l in out.splitlines() if l.startswith("core-drift")]
-        self.assertTrue(any("gate.py" in l for l in drift), out)
-
-        r = self.fh("diff", str(self.project))
-        self.assertEqual(r.returncode, 1, "drift present -> diff exits 1")
+        # drift nag: `gategraph diff` names exactly the hotfixed file and exits 1
+        rc, report = self.drift_report()
+        self.assertEqual(rc, 1, "drift present -> diff exits 1")
+        self.assertIn("gate.py", report)
+        self.assertNotIn("PROTOCOL.md", report,
+                         "a pristine file must not be named as drift")
 
     def test_upstream_promotes_hotfix_and_closes_the_loop(self):
         hotfix = self.release_and_hotfix()
         self.fh("update", str(self.project))
 
-        r = self.fh("upstream", str(self.project), "harness/core/gate.py")
+        r = self.fh("upstream", str(self.project), self.HOTFIX_REL)
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         self.assertIn("PILOT HOTFIX",
-                      (self.template / "core/gate.py").read_text(),
+                      (self.template / "core/cli/gate.py").read_text(),
                       "hotfix must land in the template")
 
-        # owner resolves the sidecar after promoting
+        # the maintainer resolves the sidecar after promoting
         hotfix.with_name("gate.py.fhnew").unlink()
 
-        r = self.fh("diff", str(self.project))
-        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        out = self.lint_machine()
-        self.assertFalse([l for l in out.splitlines()
-                          if l.startswith("core-drift")],
-                         f"core-drift must be clean after upstream:\n{out}")
+        rc, report = self.drift_report()
+        self.assertEqual(rc, 0, report)
+        self.assertIn("pristine and current", report)
 
         # the promoted template still stamps a live project (self-check green)
         fresh = self.project.parent / "fresh-after-promote"

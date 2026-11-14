@@ -1,0 +1,4 @@
+# The change has no test_*.py file, so nothing shows that it behaves.
+gate: tested
+check: unit-tests
+rule: tests.none

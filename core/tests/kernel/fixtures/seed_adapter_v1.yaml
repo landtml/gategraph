@@ -1,0 +1,75 @@
+# adapter.yaml, the single source of truth for this project's enforcement.
+# Full schema reference: docs/ADAPTER_GUIDE.md in the GateGraph template repo.
+fh_schema: 1
+project: {{FH_PROJECT}}
+artifact_noun: {{FH_ARTIFACT_NOUN}}   # what one "unit" of work is
+unit_dir: {{FH_UNIT_DIR}}
+framework_dirs: [.claude, harness]    # leak-scan targets
+instance_token_patterns: []           # optional extra regexes marking instance-only tokens
+
+workflow:
+  gates: {{FH_GATES}}
+  hashed_gates: {{FH_HASHED_GATES}}       # sha256-staleness gates
+  tool_set_gates: {{FH_TOOL_SET_GATES}}   # settable ONLY by their check cmd
+  gate_commands:                          # THE ONLY place next-step text lives
+{{FH_GATE_COMMANDS}}
+
+policies:
+{{FH_POLICIES_BLOCK}}
+protected_paths: ["{{FH_UNIT_DIR}}/*/manifest.yaml", "{{FH_UNIT_DIR}}/.active"]
+
+checks: []   # {id, cmd, on: [globs], severity: fatal|warn, enforces: <rule-id>}
+
+reviewer:
+  rubric: harness/adapter/review_rubric.md   # the only key core reads (harness_lint)
+  evidence_file: review.json    # consumed by the ADAPTER-layer review assets
+  mode: blinded                 # (tests/pilot/ reference wiring), not by core;
+  cross_model:                  # wire.py installs the checks that enforce them
+    enabled: false
+    cmd: null
+    advisory: true
+
+doctor:
+  required:
+    - {id: pyyaml, cmd: "python3 -c 'import yaml'"}
+  advisory: []
+  # Real secrets/PII in this project? The deny policies are COOPERATIVE only
+  # (docs/THREAT-MODEL.md in the template), wire real scanning, e.g.:
+  #   advisory:
+  #     - {id: gitleaks, cmd: "gitleaks detect --no-banner --exit-code 1"}
+
+state_reap:
+  patterns: ["harness/state/touched-*", "harness/state/stopcount-*"]
+  max_age_days: 7
+
+escalation:                     # the "know when you don't know" tier
+  fail_streak_to_escalate: 3    # N consecutive gate failures -> escalate, not loop
+  infra_retry_limit: 3          # consecutive infra faults (buggy oracle, expired
+                                # auth) the loop retries before it stops with an
+                                # ESCALATED banner instead of spinning
+  disagreement_threshold: 0.3   # tau: self-consistency vote spread above this
+                                # escalates (a RAW disagreement fraction, NOT an
+                                # error probability, pre-0.4 name was
+                                # error_prob_threshold, still read for one
+                                # release). P7-calibrated (docs/DESIGN.md §4)
+                                # with a declared caveat: separation was weak
+                                # (confident-wrong dominates), recalibrate per
+                                # project; fail_streak stays the primary trigger.
+
+loop:                           # Layer 2, stamped always, inert until enabled
+  enabled: {{FH_LOOP_ENABLED}}
+  oracle: "harness.adapter.oracle:Oracle"
+  gates: {metric_floors: {}}    # thresholds only; the oracle computes metrics itself
+  # stop: {graduate_target: 3}  # SUCCESS condition, stop once N variants
+  #                             # graduate. Unset = 9999 (backstops end the run).
+  self_consistency: {enabled: false, n: 8}   # opt-in search primitive (majority vote)
+  reflexion: {enabled: false, max_iters: 2}  # opt-in critique->revise
+  backstops:                    # NON-NULL defaults; loop refuses to start if all null
+    max_iterations: 25
+    cost_budget_usd: 10.0
+    wall_clock_minutes: 180
+    drift: {max_attempts_per_variant: 3, max_minutes_per_variant: 20}
+    # rate_limit_guard:         # optional 5h-usage-window guard, DISABLED until
+    #   enabled: false          # calibrated: halts the run near the subscription
+    #   tokens_5h_ceiling: null # ceiling instead of burning the window blind.
+    #   halt_at_percent: 97

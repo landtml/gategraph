@@ -1,0 +1,10 @@
+# A small document pack: one render check for the adapter's packaged gate.
+pack: document
+version: 1
+readers:
+  - {match: ["**/*.tex", "**/*.md"], reader: text}
+tools: [read_file, glob, grep, write_file, edit_file]
+checks:
+  - {id: render, cmd: "python3 {pack}/checks/render.py {unit}", on: ["**/*.tex"]}
+gate_presets:
+  default: [scoped, composed, packaged]

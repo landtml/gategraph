@@ -1,0 +1,14 @@
+# The data pack reference project: one dataset unit, three gates, no approval.
+schema: 2
+project: data-example
+unit_noun: dataset
+unit_dir: datasets
+packs: [data]
+gates:
+  - id: declared
+    checks: [data-schema]
+  - id: bounded
+    checks: [data-row-counts, data-null-rates]
+  - id: reconciled
+    checks: [data-reconcile]
+    seals_unit: true

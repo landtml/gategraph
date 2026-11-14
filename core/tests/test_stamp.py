@@ -1,7 +1,7 @@
 """Stamp integrity: every core file matches its sha256 recorded at stamp time.
 
 This is the harness proving itself alive. If this fails, either core files
-were hand-edited (run `gatebench diff` / `gatebench upstream`) or the stamp
+were hand-edited (run `gategraph diff` / `gategraph upstream`) or the stamp
 is corrupt.
 """
 import hashlib
@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 MANIFEST = ROOT / "harness" / ".fh" / "MANIFEST.json"
 # In the template checkout the suite lives at <template>/core/tests, so there
-# is no stamp to verify there (gatebench.py's own tests cover stamping).
+# is no stamp to verify there (gategraph.py's own tests cover stamping).
 IS_STAMPED = Path(__file__).resolve().parents[2].name == "harness"
 
 
@@ -41,7 +41,7 @@ class TestStampIntegrity(unittest.TestCase):
                     drifted.append(rel)
         self.assertEqual(
             drifted, [],
-            f"core files drifted from stamp (run `gatebench diff`): {drifted}")
+            f"core files drifted from stamp (run `gategraph diff`): {drifted}")
 
 
 if __name__ == "__main__":

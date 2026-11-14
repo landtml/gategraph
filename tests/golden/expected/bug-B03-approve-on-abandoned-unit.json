@@ -1,0 +1,42 @@
+{
+  "id": "bug-B03-approve-on-abandoned-unit",
+  "legacy_bug": "B03",
+  "steps": [
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 0,
+      "next": "scope_confirmed",
+      "op": "start",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": null,
+      "effective": [],
+      "exit": 0,
+      "i": 1,
+      "next": "scope_confirmed",
+      "op": "abandon",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "abandoned"
+    },
+    {
+      "active": null,
+      "effective": [
+        "scope_confirmed"
+      ],
+      "exit": 0,
+      "gate": "scope_confirmed",
+      "i": 2,
+      "next": "composed",
+      "op": "approve",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "abandoned"
+    }
+  ]
+}

@@ -1,9 +1,9 @@
 """T10's CODE half: the committed workflows must parse, cover both lanes +
-the nightly chaos/fuzz lane, reference only make targets that exist, and
+the nightly corpus lane (chaos and fuzz were dropped in X1), reference only make targets that exist, and
 never arm live spend (FH_LIVE_SMOKE / eval-ab stay manual forever).
 
 NB: yaml.safe_load parses a bare `on:` key as boolean True (YAML 1.1),
-the repo's own known gotcha (docs/RETROFIT.md seam 1); tolerate both."""
+a known gotcha; tolerate both."""
 import unittest
 from pathlib import Path
 
@@ -27,7 +27,7 @@ class TestWorkflows(unittest.TestCase):
         self.assertIn("fast", jobs)
         self.assertIn("slow", jobs)
         pys = jobs["fast"]["strategy"]["matrix"]["python"]
-        self.assertIn("3.10", pys)
+        self.assertIn("3.11", pys)
         self.assertIn("3.13", pys)
 
     def test_slow_lane_fetches_tags_for_upgrade_path(self):
@@ -37,13 +37,14 @@ class TestWorkflows(unittest.TestCase):
         self.assertEqual(checkout["with"]["fetch-depth"], 0,
                          "test_upgrade_path stamps the previous git tag")
 
-    def test_nightly_runs_chaos_and_fuzz(self):
+    def test_nightly_runs_the_corpus_and_no_chaos_or_fuzz(self):
         doc = _load("nightly.yml")
         self.assertIn("schedule", doc["on"])
         runs = "\n".join(step.get("run", "") for j in doc["jobs"].values()
                          for step in j["steps"])
-        self.assertIn("make chaos", runs)
-        self.assertIn("make fuzz", runs)
+        self.assertIn("make eval", runs)
+        self.assertNotIn("make chaos", runs)
+        self.assertNotIn("make fuzz", runs)
 
     def test_only_real_make_targets_and_no_live_spend(self):
         mk = (REPO / "Makefile").read_text(encoding="utf-8")

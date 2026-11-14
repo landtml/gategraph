@@ -1,0 +1,50 @@
+{
+  "id": "start-takes-over-paused",
+  "steps": [
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 0,
+      "next": "scope_confirmed",
+      "op": "start",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 1,
+      "next": "scope_confirmed",
+      "op": "pause",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "paused"
+    },
+    {
+      "active": "u2",
+      "effective": [],
+      "exit": 0,
+      "i": 2,
+      "next": "scope_confirmed",
+      "op": "start",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress",
+      "unit": "u2"
+    },
+    {
+      "active": "u2",
+      "effective": [],
+      "exit": 0,
+      "i": 3,
+      "next": "scope_confirmed",
+      "op": "status",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "paused"
+    }
+  ]
+}

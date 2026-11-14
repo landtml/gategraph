@@ -1,0 +1,4 @@
+# The unit the external actor must refuse, and why.
+gate: packaged
+check: render
+rule: document.render_failed

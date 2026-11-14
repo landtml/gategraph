@@ -1,0 +1,6 @@
+version: 1
+targets:
+  - config/app.yaml
+steps:
+  - {op: write, target: config/app.yaml, content: "retries: 3\n"}
+  - {op: write, target: config/other.yaml, content: "retries: 5\n"}

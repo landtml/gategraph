@@ -1,0 +1,49 @@
+{
+  "id": "escalate-is-terminal-for-start",
+  "steps": [
+    {
+      "active": "u1",
+      "effective": [],
+      "exit": 0,
+      "i": 0,
+      "next": "scope_confirmed",
+      "op": "start",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "in_progress"
+    },
+    {
+      "active": null,
+      "effective": [],
+      "exit": 0,
+      "i": 1,
+      "next": "scope_confirmed",
+      "op": "escalate",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "escalated"
+    },
+    {
+      "active": null,
+      "effective": [],
+      "exit": 1,
+      "i": 2,
+      "next": "scope_confirmed",
+      "op": "start",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "escalated"
+    },
+    {
+      "active": null,
+      "effective": [],
+      "exit": 1,
+      "i": 3,
+      "next": "scope_confirmed",
+      "op": "proceed",
+      "says_unit_complete": false,
+      "stale": [],
+      "status": "escalated"
+    }
+  ]
+}

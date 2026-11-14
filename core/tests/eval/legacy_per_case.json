@@ -1,0 +1,590 @@
+{
+  "source": "core/eval/runner.py run_corpus (legacy engine, pack eval/pack) at legacy-0.4 era HEAD 0ecbf0b",
+  "seeds": 5,
+  "overall": {
+    "n_cases": 44,
+    "trials": 220,
+    "passed": 220,
+    "pass_rate": 1.0,
+    "ci": [
+      0.9828,
+      1.0
+    ]
+  },
+  "histogram": {},
+  "live_cases_skipped": 10,
+  "cases": {
+    "clean-summary-full": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "clean-main-full": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "clean-date-ranges": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "clean-appendix-page-count": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "clean-statement": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "acct-basic-contact-line": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "acct-date-formats-clean": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": true,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "acct-glued-to-text": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": true,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "acct-hyphenated-timestamp-fires": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": true,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "acct-in-latex-macro": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "acct-outside-unit-scope-any": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "acct-phone-number-clean": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": true,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "acct-spaced-hyphen": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": true,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "disclosure-client-name": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "disclosure-client-uppercase": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": true,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "disclosure-generic-clean": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "disclosure-out-of-scope-clean": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": true,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "disclosure-product-name": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "tariffs-net-margin": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "tariffs-discount-rate": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "tariffs-page-count-clean": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": true,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "tariffs-list-price": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "tariffs-out-of-scope-clean": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": true,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "scratch-section-todo": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "scratch-section-scratchpad": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "scratch-subsection-clean": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": true,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "mach-escalate-terminal": {
+      "kind": "machinery",
+      "gate": "scope_confirmed",
+      "set": "iterate",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "mach-out-of-order-refused": {
+      "kind": "machinery",
+      "gate": "composed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "mach-reset-invalidates-later": {
+      "kind": "machinery",
+      "gate": "pdf_verified",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "mach-staleness-reopens": {
+      "kind": "machinery",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "notes-scope-summary-clean": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": true,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "notes-section-plain": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "notes-section-inner-spaces": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "style-buzzword-boundary-clean": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": true,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "style-buzzword-leveraging": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "style-buzzword-robust": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "style-shouting": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "style-single-exclaim-clean": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "style-cliche-in-conclusion": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "style-emdash-tex-triple": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "style-emdash-unicode": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "style-not-just-construction": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": false,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "style-not-just-no-but-clean": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "iterate",
+      "adversarial": true,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    "style-out-of-scope-clean": {
+      "kind": "detection",
+      "gate": "lint_passed",
+      "set": "heldout",
+      "adversarial": true,
+      "passes": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  }
+}
